@@ -7,10 +7,6 @@ import copy
 import requests
 import math
 import datetime
-import plotly.plotly as py
-import plotly.graph_objs as go
-from plotly.tools import FigureFactory as FF
-import plotly
 import pandas as pd
 
 day=datetime.datetime.today().weekday()
@@ -18,9 +14,6 @@ if day not in [0,1,2,3,4]:
     exit(0)
 
 logging.basicConfig(level=logging.DEBUG,format=' %(asctime)s - %(levelname)s - %(message)s')
-logging.disable(logging.INFO)
-
-plotly.tools.set_credentials_file(username='pricecomstock',api_key='p96zu7y2oj')
 
 ELO_K=50.0
 ELO_N=290.0
@@ -35,38 +28,6 @@ WEBHOOK_URL = 'https://hooks.slack.com/services/T1C6G4L3C/B2UN349CG/HkzD6NeBA0RC
 with open(WORKING_DIR + 'current_standings.json') as standings_file:
     foos_json = json.load(standings_file)
 
-
-def elo_expected(ra,rb):
-    qa=10.0**(ra/ELO_N)
-    logging.debug('QA: ' + str(qa))
-    qb=10.0**(rb/ELO_N)
-    logging.debug('QB: ' + str(qb))
-    expectedA=qa/(qa+qb)
-    logging.debug('EA: ' + str(expectedA))
-    expectedB=qb/(qa+qb)
-    logging.debug('EB: ' + str(expectedB))
-    return (expectedA, expectedB)
-
-def elo_change(ra,rb,sa,sb):
-    expected = elo_expected(ra,rb)
-    if sa > sb:
-        playerAwin=True
-    else:
-        playerAwin=False
-    if playerAwin:
-        logging.debug('Result: A [' + str(ra) + '] beats B [' + str(rb) + '] ' + str(sa) + '-' + str(sb))
-        actual=1.0
-    else:
-        logging.info('Result: B [' + str(rb) + '] beats A [' + str(ra) + '] ' + str(sb) + '-' + str(sa))
-        actual=0.0
-    delta = ELO_K*(actual-expected[0])
-    logging.debug('Delta: ' + str(delta))
-    new_ra = ra + delta
-    logging.info('RA: ' + str(ra) + '-->' + str(new_ra))
-    new_rb = rb - delta
-    logging.info('RB: ' + str(rb) + '-->' + str(new_rb))
-    return (new_ra, new_rb, delta)
-
 def getplayersbeside(king):
     p=[]
     for x in PLAYER_LIST:
@@ -79,126 +40,6 @@ def blanksafeint(s):
         return int(s)
     else:
         return None
-
-def update_stats(game,sjson):
-    gameseq=int(game[0])
-    gamedate=game[1]
-    scores={'price':game[2],'tritz':game[3],'elliott':game[4]}
-    for player in scores:
-        if scores[player] == '':
-            manout=player
-        elif scores[player] == max(scores.values(),key=blanksafeint):
-            wscore=float(scores[player])
-            winner=player
-        else:
-            lscore=float(scores[player])
-            loser=player
-
-
-    ##################
-    # Streak
-    # winner
-    if sjson['players'][winner]['streak']['type'] == 'W':
-        sjson['players'][winner]['streak']['length'] += 1
-    else:
-        sjson['players'][winner]['streak']['type'] = 'W'
-        sjson['players'][winner]['streak']['length'] = 1
-
-    # loser
-    if sjson['players'][loser]['streak']['type'] == 'L':
-        sjson['players'][loser]['streak']['length'] += 1
-    else:
-        sjson['players'][loser]['streak']['type'] = 'L'
-        sjson['players'][loser]['streak']['length'] = 1
-
-    ##################
-    # PS/G
-    if sjson['players'][winner]['ps/g'] >= 0:
-        sjson['players'][winner]['ps/g'] = (sjson['players'][winner]['games'] * sjson['players'][winner]['ps/g'] + wscore)/(sjson['players'][winner]['games'] + 1)
-    else:
-        sjson['players'][winner]['ps/g'] = wscore
-
-    if sjson['players'][loser]['ps/g'] >= 0:
-        sjson['players'][loser]['ps/g'] = (sjson['players'][loser]['games'] * sjson['players'][loser]['ps/g'] + lscore)/(sjson['players'][loser]['games'] + 1)
-    else:
-        sjson['players'][loser]['ps/g'] = lscore
-
-    ##################
-    # PA/G
-    if sjson['players'][winner]['pa/g'] >= 0:
-        sjson['players'][winner]['pa/g'] = (sjson['players'][winner]['games'] * sjson['players'][winner]['pa/g'] + lscore)/(sjson['players'][winner]['games'] + 1)
-    else:
-        sjson['players'][winner]['pa/g'] = lscore
-
-    if sjson['players'][loser]['pa/g'] >= 0:
-        sjson['players'][loser]['pa/g'] = (sjson['players'][loser]['games'] * sjson['players'][loser]['pa/g'] + wscore)/(sjson['players'][loser]['games'] + 1)
-    else:
-        sjson['players'][loser]['pa/g'] = wscore
-
-    ##################
-    # Avg Margin Victory
-    if sjson['players'][winner]['am+'] >= 0:
-        sjson['players'][winner]['am+'] = (sjson['players'][winner]['wins'] * sjson['players'][winner]['am+'] + (wscore-lscore))/(sjson['players'][winner]['wins'] + 1)
-    else:
-        sjson['players'][winner]['am+'] = wscore - lscore
-
-    ##################
-    # Avg Margin Loss
-    if sjson['players'][loser]['am-'] >= 0:
-        sjson['players'][loser]['am-'] = (sjson['players'][loser]['losses'] * sjson['players'][loser]['am-'] + (wscore-lscore))/(sjson['players'][loser]['losses'] + 1)
-    else:
-        sjson['players'][loser]['am-'] = wscore - lscore
-
-    ##################
-    # King
-    if loser == sjson['overall']['king'] or sjson['overall']['king'] == '':
-        sjson['overall']['king'] = winner
-        king_s='NEW KING'
-    else:
-        king_s=''
-
-    ##################
-    # Elo
-    # print "stats updater"
-    ec = elo_change(sjson['players'][winner]['elo'],sjson['players'][loser]['elo'],wscore,lscore)
-    wes="[" + "{0:.1f}".format(sjson['players'][winner]['elo']) + "-->" + "{0:.1f}".format(ec[0]) + ' | +' + "{0:.1f}".format(ec[2]) + "]"
-    les="[" + "{0:.1f}".format(sjson['players'][loser]['elo']) + "-->" + "{0:.1f}".format(ec[1]) + ' | -' + "{0:.1f}".format(ec[2]) + "]"
-    sjson['players'][winner]['elo'] = ec[0]
-    sjson['players'][loser]['elo'] = ec[1]
-
-
-    ##################
-    # Wins + games
-    sjson['players'][winner]['games'] += 1
-    sjson['players'][winner]['wins'] += 1
-
-    ##################
-    # Losses + games
-    sjson['players'][loser]['games'] += 1
-    sjson['players'][loser]['losses'] += 1
-
-    ##################
-    # Win Percent
-    sjson['players'][winner]['winpct'] = float(sjson['players'][winner]['wins'])/float(sjson['players'][winner]['games'])
-    sjson['players'][loser]['winpct'] = float(sjson['players'][loser]['wins'])/float(sjson['players'][loser]['games'])
-
-    game_summary='GAME #' +str(gameseq) + ': ' + winner + ' ' + wes + ' defeats ' + loser + ' ' + les + ' ' + king_s
-    logging.debug(game_summary)
-    return ((gameseq,gamedate,game[2],game[3],game[4],sjson['players']['price']['elo'],sjson['players']['tritz']['elo'],sjson['players']['elliott']['elo']),game_summary,wes,les)
-
-def starting_stats():
-    d = {}
-    d.setdefault('players',{})
-    d.setdefault('overall',{})
-    d['players'].setdefault('price',{'name':'price','games':0,'wins':0,'losses':0,'streak':{'type':'','length':0},'ps/g':-1.0,'pa/g':-1.0,'am+':-1.0,'am-':-1.0,'winpct':-1.0,'elo':1000})
-    d['players'].setdefault('tritz',{'name':'tritz','games':0,'wins':0,'losses':0,'streak':{'type':'','length':0},'ps/g':-1.0,'pa/g':-1.0,'am+':-1.0,'am-':-1.0,'winpct':-1.0,'elo':1000})
-    d['players'].setdefault('elliott',{'name':'elliott','games':0,'wins':0,'losses':0,'streak':{'type':'','length':0},'ps/g':-1.0,'pa/g':-1.0,'am+':-1.0,'am-':-1.0,'winpct':-1.0,'elo':1000})
-    d['overall'].setdefault('king','')
-    return d
-
-def elo_test(numgames):
-    for x in range(numgames):
-        elo_change(random.randint(700,1300),random.randint(700,1300),5,3)
 
 def game_report(game,sjson):
     report=''
@@ -688,6 +529,3 @@ if SIMULATION_MODE:
     slack_say('Simulating ' + str(numgames) + ' games...')
     game_test(numgames,foos_json)
     # slack_post_charts(fooscharts('sim','/home/pricecomstock/slash-selfie/foosball/simresults.csv'))
-
-if CHART_MODE:
-    slack_post_charts(fooscharts('real','/home/pricecomstock/slash-selfie/foosball/results.csv'))

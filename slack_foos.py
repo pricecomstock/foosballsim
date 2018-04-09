@@ -1,4 +1,5 @@
 from slack_config import WEBHOOK_URL
+import json
 import requests
 
 def slack_say(s):

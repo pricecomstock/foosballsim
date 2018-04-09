@@ -33,3 +33,4 @@ def elo_change(ratingA,ratingB,scoreA,scoreB):
     new_ratingB = ratingB - delta
     logging.info('ratingB: ' + str(ratingB) + '-->' + str(new_ratingB))
     return (new_ratingA, new_ratingB, delta)
+

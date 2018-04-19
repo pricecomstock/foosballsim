@@ -1,3 +1,15 @@
+import csv
+
+def starting_stats():
+    d = {}
+    d.setdefault('players',{})
+    d.setdefault('overall',{})
+    d['players'].setdefault('price',{'name':'price','games':0,'wins':0,'losses':0,'streak':{'type':'','length':0},'ps/g':-1.0,'pa/g':-1.0,'am+':-1.0,'am-':-1.0,'winpct':-1.0,'elo':1000})
+    d['players'].setdefault('tritz',{'name':'tritz','games':0,'wins':0,'losses':0,'streak':{'type':'','length':0},'ps/g':-1.0,'pa/g':-1.0,'am+':-1.0,'am-':-1.0,'winpct':-1.0,'elo':1000})
+    d['players'].setdefault('elliott',{'name':'elliott','games':0,'wins':0,'losses':0,'streak':{'type':'','length':0},'ps/g':-1.0,'pa/g':-1.0,'am+':-1.0,'am-':-1.0,'winpct':-1.0,'elo':1000})
+    d['overall'].setdefault('king','')
+    return d
+
 def first_run_setup():
     foos_json = starting_stats()
     og_results_csv = open(WORKING_DIR + 'original_results.csv')

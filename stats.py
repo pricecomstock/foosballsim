@@ -109,13 +109,3 @@ def update_stats(game,sjson):
     game_summary='GAME #' +str(gameseq) + ': ' + winner + ' ' + wes + ' defeats ' + loser + ' ' + les + ' ' + king_s
     logging.debug(game_summary)
     return ((gameseq,gamedate,game[2],game[3],game[4],sjson['players']['price']['elo'],sjson['players']['tritz']['elo'],sjson['players']['elliott']['elo']),game_summary,wes,les)
-
-def starting_stats():
-    d = {}
-    d.setdefault('players',{})
-    d.setdefault('overall',{})
-    d['players'].setdefault('price',{'name':'price','games':0,'wins':0,'losses':0,'streak':{'type':'','length':0},'ps/g':-1.0,'pa/g':-1.0,'am+':-1.0,'am-':-1.0,'winpct':-1.0,'elo':1000})
-    d['players'].setdefault('tritz',{'name':'tritz','games':0,'wins':0,'losses':0,'streak':{'type':'','length':0},'ps/g':-1.0,'pa/g':-1.0,'am+':-1.0,'am-':-1.0,'winpct':-1.0,'elo':1000})
-    d['players'].setdefault('elliott',{'name':'elliott','games':0,'wins':0,'losses':0,'streak':{'type':'','length':0},'ps/g':-1.0,'pa/g':-1.0,'am+':-1.0,'am-':-1.0,'winpct':-1.0,'elo':1000})
-    d['overall'].setdefault('king','')
-    return d

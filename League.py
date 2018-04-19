@@ -36,7 +36,11 @@ class League:
         })
 
     def update_stats(self, score_tuple_a, score_tuple_b):
-        pass
+        player_a = self.players[score_tuple_a[0]] # get player from index included in tuple
+        player_b = self.players[score_tuple_b[0]] # get player from index included in tuple
+
+        player_a.update_stats(own_points=score_tuple_a[1], opp_points=score_tuple_b[1], opp_king=player_b.king, opp_elo=player_b.elo)
+        player_a.update_stats(own_points=score_tuple_b[1], opp_points=score_tuple_a[1], opp_king=player_a.king, opp_elo=player_a.elo)
 
 
     # This will take a "score marquee array" and transform it to (player_id, score) pairs in a dict with metadata

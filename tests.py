@@ -1,5 +1,6 @@
 import unittest
 from League import League
+from Player import Player
 
 class TestCSVImport(unittest.TestCase):
 
@@ -31,6 +32,38 @@ class TestCSVImport(unittest.TestCase):
             "score_tuple_a": (0, 3),
             "score_tuple_b": (2, 5)
         })
+
+class TestPlayerAndStats(unittest.TestCase):
+    def test_creation(self):
+        test_player = Player('test')
+        self.assertEqual(test_player.name, 'test')
+        self.assertEqual(test_player.elo, 1000)
+    
+    def test_elo(self):
+        test_player = Player('test')
+        test_player.update_elo(1, 0, 1000)
+        self.assertNotEqual(test_player.elo, 1000)
+        self.assertEqual(test_player.elo, 1025)
+        test_player.update_elo(0, 1, 1025)
+        self.assertEqual(test_player.elo, 1000)
+    
+    def test_run(self):
+        test_player = Player('test')
+        test_player.update_run(0, 1) # loss
+        self.assertFalse(test_player.winning_run)
+        self.assertEqual(test_player.run, 1)
+        test_player.update_run(0, 1) # loss
+        self.assertFalse(test_player.winning_run)
+        self.assertEqual(test_player.run, 2)
+        
+        test_player.update_run(1, 0) # win
+        self.assertTrue(test_player.winning_run)
+        self.assertEqual(test_player.run, 1)
+        test_player.update_run(1, 0) # win
+        test_player.update_run(1, 0) # win
+        test_player.update_run(1, 0) # win
+        self.assertTrue(test_player.winning_run)
+        self.assertEqual(test_player.run, 4)
         
 
 if __name__ == '__main__':

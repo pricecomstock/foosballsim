@@ -28,19 +28,27 @@ class League:
         return cls(players, games)
     
     def add_game_to_league(self, score_tuple_a, score_tuple_b, date):
-        self.update_stats
+        self.update_stats(score_tuple_a, score_tuple_b)
         self.games.append({
             "score_tuple_a":score_tuple_a,
             "score_tuple_b":score_tuple_b,
             "date": date
         })
 
-    def update_stats(self, score_tuple_a, score_tuple_b):
+    def update_stats(self, score_tuple_a, score_tuple_b): 
         player_a = self.players[score_tuple_a[0]] # get player from index included in tuple
         player_b = self.players[score_tuple_b[0]] # get player from index included in tuple
 
-        player_a.update_stats(own_points=score_tuple_a[1], opp_points=score_tuple_b[1], opp_king=player_b.king, opp_elo=player_b.elo)
-        player_a.update_stats(own_points=score_tuple_b[1], opp_points=score_tuple_a[1], opp_king=player_a.king, opp_elo=player_a.elo)
+        first_game = len(self.games) == 0
+        if first_game: # if it's the first game, the winner will be king
+            player_a_king = True
+            player_b_king = True
+        else:
+            player_a_king = player_a.king
+            player_b_king = player_b.king
+
+        player_a.update_stats(own_points=score_tuple_a[1], opp_points=score_tuple_b[1], opp_king=player_b_king, opp_elo=player_b.elo)
+        player_b.update_stats(own_points=score_tuple_b[1], opp_points=score_tuple_a[1], opp_king=player_a_king, opp_elo=player_a.elo)
 
 
     # This will take a "score marquee array" and transform it to (player_id, score) pairs in a dict with metadata

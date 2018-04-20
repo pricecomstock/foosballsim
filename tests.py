@@ -137,5 +137,19 @@ class TestPlayerAndStats(unittest.TestCase):
         test_player.update_stats(5,2,False,1000) # remains NOT king
         self.assertFalse(test_player.king)
 
+class TestLeagueGames(unittest.TestCase):
+    
+    def test_stat_updates(self):
+        with open('original_results.csv') as og_results:
+            test_league = League.from_results_csv(og_results)
+        
+        p0_prev_wins = test_league.players[0].wins
+        p1_prev_losses = test_league.players[1].losses
+        test_league.add_game_to_league((0,3), (1,2), 41780)
+        
+        self.assertEqual(test_league.players[0].wins, 1 + p0_prev_wins)
+        self.assertEqual(test_league.players[1].losses, 1 + p1_prev_losses)
+        
+
 if __name__ == '__main__':
     unittest.main()

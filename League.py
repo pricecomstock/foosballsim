@@ -20,10 +20,8 @@ class League:
         # Could use input validation but this isn't client side soooo
         contents = list(csv.reader(results_csv))
         headers = contents[0]
-        # players = headers[2:]
         player_names = headers[2:]
         games = contents[1:]
-        # stats = Stats(players, games)
         players = [Player(pname) for pname in player_names]
         return cls(players, games)
     

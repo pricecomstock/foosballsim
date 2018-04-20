@@ -1,6 +1,6 @@
 import unittest
 from League import League
-from Player import Player
+from Player import Player, InvalidScoreError, InvalidKingError
 
 class TestCSVImport(unittest.TestCase):
 
@@ -38,14 +38,25 @@ class TestPlayerAndStats(unittest.TestCase):
         test_player = Player('test')
         self.assertEqual(test_player.name, 'test')
         self.assertEqual(test_player.elo, 1000)
-    
-    def test_elo(self):
+
+    def test_wins_losses(self):
         test_player = Player('test')
-        test_player.update_elo(1, 0, 1000)
-        self.assertNotEqual(test_player.elo, 1000)
-        self.assertEqual(test_player.elo, 1025)
-        test_player.update_elo(0, 1, 1025)
-        self.assertEqual(test_player.elo, 1000)
+        self.assertEqual(test_player.wins, 0)
+        self.assertEqual(test_player.losses, 0)
+
+        test_player.update_wins_losses(1,0)
+        test_player.update_wins_losses(1,0)
+        self.assertEqual(test_player.wins, 2)
+        self.assertEqual(test_player.losses, 0)
+
+        test_player.update_wins_losses(0,1)
+        test_player.update_wins_losses(0,1)
+        self.assertEqual(test_player.wins, 2)
+        self.assertEqual(test_player.losses, 2)
+    
+    def test_tie_rejection(self):
+        test_player = Player('test')
+        self.assertRaises(InvalidScoreError, test_player.update_stats, 5,5,True,1000)
     
     def test_run(self):
         test_player = Player('test')
@@ -64,7 +75,67 @@ class TestPlayerAndStats(unittest.TestCase):
         test_player.update_run(1, 0) # win
         self.assertTrue(test_player.winning_run)
         self.assertEqual(test_player.run, 4)
+    
+    def test_point_stats_totals(self):
+        test_player = Player('test')
+        test_player.update_stats(1,5,True,1000)
+        test_player.update_stats(5,2,False,1000)
+
+        self.assertEqual(test_player.total_margin_victory, 3)
+        self.assertEqual(test_player.total_margin_loss, 4)
+        self.assertEqual(test_player.total_points_scored, 6)
+        self.assertEqual(test_player.total_points_allowed, 7)
+    
+    def test_point_stats_avg(self):
+        test_player = Player('test')
+        test_player.update_stats(1,5,True,1000)
+        test_player.update_stats(5,2,False,1000)
+
+        self.assertEqual(test_player.avg_margin_victory, 3)
+        self.assertEqual(test_player.avg_margin_loss, 4)
+        self.assertEqual(test_player.avg_points_scored, 3)
+        self.assertEqual(test_player.avg_points_allowed, 3.5)
         
+        test_player.update_stats(10,4,False,1000)
+        test_player.update_stats(2,3,False,1000)
+
+        self.assertEqual(test_player.avg_margin_victory, 4.5)
+        self.assertEqual(test_player.avg_margin_loss, 2.5)
+        self.assertEqual(test_player.avg_points_scored, 4.5)
+        self.assertEqual(test_player.avg_points_allowed, 3.5)
+    
+    def test_win_percent(self):
+        test_player = Player('test')
+        test_player.update_stats(5,2,False,1000)
+        self.assertAlmostEqual(test_player.win_percent, 1.0)
+        test_player.update_stats(1,5,False,1000)
+        self.assertAlmostEqual(test_player.win_percent, 0.5)
+        test_player.update_stats(5,2,False,1000)
+        self.assertAlmostEqual(test_player.win_percent, 0.666666667)
+
+    def test_elo(self):
+        test_player = Player('test')
+        test_player.update_elo(1, 0, 1000)
+        self.assertNotEqual(test_player.elo, 1000)
+        self.assertEqual(test_player.elo, 1025)
+        test_player.update_elo(0, 1, 1025)
+        self.assertEqual(test_player.elo, 1000)
+
+    def test_king_duplicate_rejection(self):
+        test_player = Player('test')
+        test_player.update_stats(5,2,True,1000)
+        self.assertRaises(InvalidKingError, test_player.update_stats, 5,3,True,1000) # but i'm the king!
+    
+    def test_king(self):
+        test_player = Player('test')
+        test_player.update_stats(5,2,True,1000) # becomes king
+        self.assertTrue(test_player.king)
+        test_player.update_stats(5,2,False,1000) # remains king
+        self.assertTrue(test_player.king)
+        test_player.update_stats(2,5,False,1000) # loses king
+        self.assertFalse(test_player.king)
+        test_player.update_stats(5,2,False,1000) # remains NOT king
+        self.assertFalse(test_player.king)
 
 if __name__ == '__main__':
     unittest.main()

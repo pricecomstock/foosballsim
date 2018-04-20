@@ -1,6 +1,12 @@
 # This is a Player object
 from elo import elo_change
 
+class InvalidScoreError(Exception):
+    pass
+
+class InvalidKingError(Exception):
+    pass
+
 class Player:
 
     def __init__(self, name): # first argument to methods is self
@@ -27,12 +33,20 @@ class Player:
         self.king = False
 
     def update_stats(self, own_points, opp_points, opp_king, opp_elo):
+        if own_points == opp_points or own_points < 0 or opp_points < 0:
+            raise InvalidScoreError("Tie games are not allowed")
+        
+        if self.king and opp_king:
+            raise InvalidKingError("The opponent said they were the king but I'm the king!")
+        
         self.update_wins_losses(own_points, opp_points)
         self.update_run(own_points, opp_points)
         self.update_points_scored_allowed_total(own_points, opp_points)
         self.update_margin_total(own_points, opp_points)
         self.update_elo(own_points, opp_points, opp_elo)
+        self.update_king(own_points, opp_points, opp_king)
 
+        self.update_win_percent()
         self.update_averages()
     
     def update_wins_losses(self, own_points, opp_points):
@@ -69,7 +83,25 @@ class Player:
         self.elo = elo_change(self.elo, opp_elo, own_points, opp_points)[0]
     
     def update_averages(self):
-        self.avg_points_scored = self.total_points_scored / (self.wins + self.losses)
-        self.avg_points_allowed = self.total_points_allowed / (self.wins + self.losses)
-        self.avg_margin_victory = self.total_margin_victory / self.wins
-        self.avg_margin_loss = self.total_margin_loss / self.losses
+        if self.wins == 0: # it's possible to still have zero has divisor if you haven't one a game
+            self.avg_margin_victory = 0.0
+        else:
+            self.avg_margin_victory = self.total_margin_victory / float(self.wins)
+        
+        if self.losses == 0:
+            self.avg_margin_loss = 0.0
+        else:
+            self.avg_margin_loss = self.total_margin_loss / float(self.losses)
+
+        self.avg_points_scored = self.total_points_scored / float(self.wins + self.losses)
+        self.avg_points_allowed = self.total_points_allowed / float(self.wins + self.losses)
+    
+    def update_win_percent(self):
+        self.win_percent = self.wins / float(self.wins + self.losses)
+    
+    def update_king(self, own_points, opp_points, opp_king):
+        won = own_points > opp_points
+        if won and opp_king:
+            self.king = True
+        elif not won:
+            self.king = False

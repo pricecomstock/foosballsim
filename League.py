@@ -1,5 +1,8 @@
 import csv
+from datetime import datetime, date, timedelta
+
 from Player import Player
+from generate_game import generate_game
 
 # This is a move toward a little more OO instead of dicts everywhere.
 
@@ -24,14 +27,6 @@ class League:
         games = contents[1:]
         players = [Player(pname) for pname in player_names]
         return cls(players, games)
-    
-    def add_game_to_league(self, score_tuple_a, score_tuple_b, date):
-        self.update_stats(score_tuple_a, score_tuple_b)
-        self.games.append({
-            "score_tuple_a":score_tuple_a,
-            "score_tuple_b":score_tuple_b,
-            "date": date
-        })
 
     def update_stats(self, score_tuple_a, score_tuple_b): 
         player_a = self.players[score_tuple_a[0]] # get player from index included in tuple
@@ -47,14 +42,27 @@ class League:
 
         player_a.update_stats(own_points=score_tuple_a[1], opp_points=score_tuple_b[1], opp_king=player_b_king, opp_elo=player_b.elo)
         player_b.update_stats(own_points=score_tuple_b[1], opp_points=score_tuple_a[1], opp_king=player_a_king, opp_elo=player_a.elo)
+    
+    def add_game_to_league(self, score_tuple_a, score_tuple_b, date=date.today()):
+        self.update_stats(score_tuple_a, score_tuple_b)
+        self.games.append({
+            "score_tuple_a":score_tuple_a,
+            "score_tuple_b":score_tuple_b,
+            "date": date
+        })
 
+    def play_generated_game(self, player_a_index, player_b_index):
+        player_a_score, player_b_score, overtime = generate_game(self.players[player_a_index], self.players[player_a_index])
+        self.add_game_to_league((player_a_index, player_a_score), (player_b_index, player_b_score))
 
     # This will take a "score marquee array" and transform it to (player_id, score) pairs in a dict with metadata
     @staticmethod
     def transform_game_row(game_result):
 
         # All fields of game_result are strings
-        game_date = int(game_result[1]) # formatting this later
+        # game_date = int(game_result[1]) # formatting this later
+        td = timedelta(days=int(game_result[1])-1)
+        game_date = date(1900,1,1) + td
         
         scores = game_result[2:]
         # Generate a tuple (player_id, score)

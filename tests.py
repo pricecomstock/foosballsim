@@ -1,4 +1,5 @@
 import unittest
+from datetime import date
 from League import League
 from Player import Player, InvalidScoreError, InvalidKingError
 
@@ -18,7 +19,7 @@ class TestCSVImport(unittest.TestCase):
         with open('original_results.csv') as og_results:
             test_league = League.from_results_csv(og_results)
         self.assertEqual(test_league.transform_game_row(['1','41780','2','4','']), {
-            "date": 41780,
+            "date": date(2014, 5, 22),
             "score_tuple_a": (0, 2),
             "score_tuple_b": (1, 4)
         })
@@ -149,7 +150,47 @@ class TestLeagueGames(unittest.TestCase):
         
         self.assertEqual(test_league.players[0].wins, 1 + p0_prev_wins)
         self.assertEqual(test_league.players[1].losses, 1 + p1_prev_losses)
+    
+    def test_imported_stats(self):
+        with open('original_results.csv') as og_results:
+            test_league = League.from_results_csv(og_results)
         
+        price = test_league.players[0]
+        tritz = test_league.players[1]
+        elliott = test_league.players[2]
+
+        # self.assertEqual(price.wins, 77+42)
+        # self.assertEqual(price.losses, 151+68)
+        # self.assertFalse(price.winning_run)
+        # # self.assertAlmostEqual(price.avg_points_scored, 0.0, 3)
+        # # self.assertAlmostEqual(price.avg_points_allowed, 0.0, 3)
+        # # self.assertAlmostEqual(price.avg_margin_victory, 0.0, 3)
+        # # self.assertAlmostEqual(price.avg_margin_loss, 0.0, 3)
+        # # self.assertEqual(price.run, 0)
+        # self.assertAlmostEqual(price.elo, 1045.101697, 3)
+        # self.assertFalse(price.king)
+
+        # self.assertEqual(tritz.wins, 151+97)
+        # self.assertEqual(tritz.losses, 77+36)
+        # # self.assertFalse(tritz.winning_run)
+        # # self.assertAlmostEqual(tritz.avg_points_scored, 0.0, 3)
+        # # self.assertAlmostEqual(tritz.avg_points_allowed, 0.0, 3)
+        # # self.assertAlmostEqual(tritz.avg_margin_victory, 0.0, 3)
+        # # self.assertAlmostEqual(tritz.avg_margin_loss, 0.0, 3)
+        # # self.assertEqual(tritz.run, 0)
+        # self.assertAlmostEqual(tritz.elo, 1117.587679, 3)
+        # self.assertTrue(tritz.king)
+ 
+        # self.assertEqual(elliott.wins, 68+36)
+        # self.assertEqual(elliott.losses, 42+97)
+        # # self.assertFalse(elliott.winning_run)
+        # # self.assertAlmostEqual(elliott.avg_points_scored, 0.0, 3)
+        # # self.assertAlmostEqual(elliott.avg_points_allowed, 0.0, 3)
+        # # self.assertAlmostEqual(elliott.avg_margin_victory, 0.0, 3)
+        # # self.assertAlmostEqual(elliott.avg_margin_loss, 0.0, 3)
+        # # self.assertEqual(elliott.run, 0)
+        # self.assertAlmostEqual(elliott.elo, 857.862748, 3)
+        # self.assertFalse(elliott.king)
 
 if __name__ == '__main__':
     unittest.main()

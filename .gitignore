@@ -1,4 +1,4 @@
 results.csv
 slack_config.py
 *.pyc
-.vscode/*
+.vscode/

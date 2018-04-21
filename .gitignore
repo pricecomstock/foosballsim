@@ -2,3 +2,4 @@ results.csv
 slack_config.py
 *.pyc
 .vscode/
+*-league.csv

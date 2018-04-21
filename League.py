@@ -93,3 +93,29 @@ class League:
             "score_tuple_a": game_player_scores[0],
             "score_tuple_b": game_player_scores[1]
         }
+    
+    def export_to_csv(self, elos=False, file_name=date.today().isoformat() + '-league.csv'):
+        with open(file_name, 'w') as csvfile:
+            field_names = ["Game", "Date"]
+            field_names += [player.name for player in self.players]
+            if elos:
+                field_names += [player.name + "_elo" for player in self.players]
+
+            writer = csv.writer(csvfile)
+            writer.writerow(field_names)
+            for index, game in enumerate(self.games):
+                game_date = (game["date"] - date(1900,1,1)).days + 1
+                row = [index+1, game_date]
+                
+                scores = [None for x in range(len(self.players))]
+                scores[game["score_tuple_a"][0]] = game["score_tuple_a"][1]
+                scores[game["score_tuple_b"][0]] = game["score_tuple_b"][1]
+
+                row += scores
+                
+                if elos:
+                    row += game["elos"]
+
+                writer.writerow(row)
+            
+            return file_name

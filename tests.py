@@ -186,5 +186,22 @@ class TestLeagueGames(unittest.TestCase):
         self.assertNotEqual(results[2], None)
         self.assertNotEqual(results[3], None)
 
+class TestCSVExport(unittest.TestCase):
+
+    def test_no_elo_export(self):
+        with open('original_results.csv') as og_results:
+            test_league = League.from_results_csv(og_results)
+        
+        with open('original_results.csv') as og_results:
+            og_results_list = list(og_results)
+            
+        test_file = test_league.export_to_csv()
+        print("opening" + test_file)
+        with open(test_file) as test_results:
+            test_results_list = list(test_results)
+        
+        self.assertListEqual(og_results_list, test_results_list)
+
+
 if __name__ == '__main__':
     unittest.main()

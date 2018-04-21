@@ -8,7 +8,7 @@ class InvalidKingError(Exception):
     pass
 
 class Player:
-
+    
     def __init__(self, name): # first argument to methods is self
         self.name = name
         
@@ -105,3 +105,44 @@ class Player:
             self.king = True
         elif not won:
             self.king = False
+    
+    def str_header(self):
+        return ''.join([
+            'PLAYER'.ljust(8) + '|',
+            'W'.rjust(5),
+            'L'.rjust(5),
+            'RUN'.rjust(4),
+            'PS/G'.rjust(6),
+            'PA/G'.rjust(6),
+            'AM+'.rjust(6),
+            'AM-'.rjust(6),
+            'WIN%'.rjust(7),
+            'ELO'.rjust(7),
+            'KING'.rjust(5)
+        ])
+
+    def __str__(self):
+
+        king_string = ''
+        if self.king:
+            king_string = ' K'
+        
+        if self.winning_run:
+            run_string = 'W'
+        else:
+            run_string = 'L'
+        
+        return ''.join([
+            self.name.ljust(8),
+            '|',
+            str(self.wins).rjust(5),
+            str(self.losses).rjust(5),
+            (str(self.run)+run_string).rjust(4),
+            "{0:.2f}".format(self.avg_points_scored).rjust(6),
+            "{0:.2f}".format(self.avg_points_allowed).rjust(6),
+            "{0:.2f}".format(self.avg_margin_victory).rjust(6),
+            "{0:.2f}".format(self.avg_margin_loss).rjust(6),
+            "{0:.3f}".format(self.win_percent).rjust(7),
+            "{0:.1f}".format(self.elo).rjust(7),
+            king_string
+        ])

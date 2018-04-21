@@ -4,8 +4,6 @@ from datetime import datetime, date, timedelta
 from Player import Player
 from generate_game import generate_game
 
-# This is a move toward a little more OO instead of dicts everywhere.
-
 # This is a League Class
 
 class League:
@@ -20,7 +18,6 @@ class League:
     
     @classmethod
     def from_results_csv(cls, results_csv):
-        # Could use input validation but this isn't client side soooo
         contents = list(csv.reader(results_csv))
         headers = contents[0]
         player_names = headers[2:]
@@ -59,13 +56,18 @@ class League:
     def play_generated_game(self, player_a_index, player_b_index):
         player_a_score, player_b_score, overtime = generate_game(self.players[player_a_index], self.players[player_a_index])
         self.add_game_to_league((player_a_index, player_a_score), (player_b_index, player_b_score))
+    
+    def stat_report(self):
+        report = ''
+        report += self.players[0].str_header() + '\n'
+        report += '\n'.join([str(player) for player in self.players])
+        return report
 
     # This will take a "score marquee array" and transform it to (player_id, score) pairs in a dict with metadata
     @staticmethod
     def transform_game_row(game_result):
 
         # All fields of game_result are strings
-        # game_date = int(game_result[1]) # formatting this later
         td = timedelta(days=int(game_result[1])-1)
         game_date = date(1900,1,1) + td
         

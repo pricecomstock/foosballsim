@@ -176,5 +176,15 @@ class TestLeagueGames(unittest.TestCase):
         self.assertAlmostEqual(elliott.elo, 857.8627482094315, 3)
         self.assertFalse(elliott.king)
 
+    def test_generated_games(self):
+        with open('original_results.csv') as og_results:
+            test_league = League.from_results_csv(og_results)
+        
+        results = test_league.play_generated_game(0,1)
+        self.assertNotEqual(results[0], None)
+        self.assertNotEqual(results[1], None)
+        self.assertNotEqual(results[2], None)
+        self.assertNotEqual(results[3], None)
+
 if __name__ == '__main__':
     unittest.main()

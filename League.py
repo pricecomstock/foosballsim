@@ -54,8 +54,18 @@ class League:
         self.games.append(game_dict)
 
     def play_generated_game(self, player_a_index, player_b_index):
-        player_a_score, player_b_score, overtime = generate_game(self.players[player_a_index], self.players[player_a_index])
-        self.add_game_to_league((player_a_index, player_a_score), (player_b_index, player_b_score))
+        player_a = self.players[player_a_index]
+        player_b = self.players[player_b_index]
+        player_a_score, player_b_score, overtime = generate_game(player_a, player_b)
+        player_a_tuple = (player_a_index, player_a_score)
+        player_b_tuple = (player_b_index, player_b_score)
+        # inelegant way to find king
+        king_change = False
+        if (player_a.king and player_b_score > player_a_score) or (player_b.king and player_a_score > player_b_score):
+            king_change = True
+
+        self.add_game_to_league(player_a_tuple, player_b_tuple)
+        return (player_a_tuple, player_b_tuple, overtime, king_change)
     
     def stat_report(self):
         report = ''

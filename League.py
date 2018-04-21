@@ -40,16 +40,21 @@ class League:
             player_a_king = player_a.king
             player_b_king = player_b.king
 
-        player_a.update_stats(own_points=score_tuple_a[1], opp_points=score_tuple_b[1], opp_king=player_b_king, opp_elo=player_b.elo)
-        player_b.update_stats(own_points=score_tuple_b[1], opp_points=score_tuple_a[1], opp_king=player_a_king, opp_elo=player_a.elo)
-    
-    def add_game_to_league(self, score_tuple_a, score_tuple_b, date=date.today()):
-        self.update_stats(score_tuple_a, score_tuple_b)
-        self.games.append({
+        player_a_elo = player_a.elo
+        player_b_elo = player_b.elo
+        player_a.update_stats(own_points=score_tuple_a[1], opp_points=score_tuple_b[1], opp_king=player_b_king, opp_elo=player_b_elo)
+        player_b.update_stats(own_points=score_tuple_b[1], opp_points=score_tuple_a[1], opp_king=player_a_king, opp_elo=player_a_elo)
+
+        return {
             "score_tuple_a":score_tuple_a,
             "score_tuple_b":score_tuple_b,
-            "date": date
-        })
+            "elos": [player.elo for player in self.players]
+        }
+    
+    def add_game_to_league(self, score_tuple_a, score_tuple_b, date=date.today()):
+        game_dict = self.update_stats(score_tuple_a, score_tuple_b)
+        game_dict.setdefault("date", date)
+        self.games.append(game_dict)
 
     def play_generated_game(self, player_a_index, player_b_index):
         player_a_score, player_b_score, overtime = generate_game(self.players[player_a_index], self.players[player_a_index])

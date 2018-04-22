@@ -1,6 +1,7 @@
 import unittest
 from datetime import date
 from League import League
+from Game import Game
 from Player import Player, InvalidScoreError, InvalidKingError
 
 class TestCSVImport(unittest.TestCase):
@@ -138,6 +139,18 @@ class TestPlayerAndStats(unittest.TestCase):
         self.assertFalse(test_player.king)
         test_player.update_stats(5,2,False,1000) # remains NOT king
         self.assertFalse(test_player.king)
+
+class TestGames(unittest.TestCase):
+    def test_random_game(self):
+        with open('original_results.csv') as og_results:
+            test_league = League.from_results_csv(og_results)
+        
+        player_a, player_b = test_league.players[0:1]
+        game = Game.generate_random_from_players(player_a, player_b)
+        
+        self.assertGreaterEqual(game.score_a, 0)
+        self.assertGreaterEqual(game.score_b, 0)
+        self.assertIsNotNone(game.overtime)
 
 class TestLeagueGames(unittest.TestCase):
     

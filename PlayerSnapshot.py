@@ -18,6 +18,7 @@ class PlayerSnapshot:
 
         self.win_percent = player.win_percent
         self.elo = player.elo
+
         self.king = player.king
     
     def str_header(self):

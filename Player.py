@@ -33,8 +33,11 @@ class Player:
         self.king = False
 
     def update_stats(self, own_points, opp_points, opp_king, opp_elo):
-        if own_points == opp_points or own_points < 0 or opp_points < 0:
+        if own_points == opp_points:
             raise InvalidScoreError("Tie games are not allowed")
+        
+        if own_points < 0 or opp_points < 0:
+            raise InvalidScoreError("Negative scores are not allowed")
         
         if self.king and opp_king:
             raise InvalidKingError("The opponent said they were the king but I'm the king!")

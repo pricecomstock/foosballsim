@@ -19,22 +19,17 @@ class TestCSVImport(unittest.TestCase):
     def test_game_transform(self):
         with open('original_results.csv') as og_results:
             test_league = League.from_results_csv(og_results)
-        self.assertEqual(test_league.transform_game_row(['1','41780','2','4','']), {
-            "date": date(2014, 5, 22),
-            "score_tuple_a": (0, 2),
-            "score_tuple_b": (1, 4)
-        })
+        self.assertEqual(
+            test_league.add_game_from_row(['1','41780','2','4','']).stateless_report(),
+            Game.create_from_scores(test_league.players[0], test_league.players[1], 2, 4, date=date(2014, 5, 22)).stateless_report()
+        )
     
     def test_game_add(self):
         with open('original_results.csv') as og_results:
             test_league = League.from_results_csv(og_results)
-        test_league.add_game_to_league((0,3), (2,5))
-        self.assertEqual(test_league.games[-1], {
-            "date": date.today(),
-            "score_tuple_a": (0, 3),
-            "score_tuple_b": (2, 5),
-            "elos": [985.0615268063299, 1117.587679769858, 897.3507934238106]
-        })
+        test_league.add_game_from_index_score_tuples((0,3), (2,5))
+        self.assertEqual(test_league.games[-1].stateless_report(), 
+            Game.create_from_scores(test_league.players[0], test_league.players[2], 3, 5).stateless_report())
 
 class TestPlayerAndStats(unittest.TestCase):
     def test_creation(self):
@@ -145,7 +140,7 @@ class TestGames(unittest.TestCase):
         with open('original_results.csv') as og_results:
             test_league = League.from_results_csv(og_results)
         
-        player_a, player_b = test_league.players[0:1]
+        player_a, player_b = test_league.players[0:2]
         game = Game.generate_random_from_players(player_a, player_b)
         
         self.assertGreaterEqual(game.score_a, 0)
@@ -160,7 +155,7 @@ class TestLeagueGames(unittest.TestCase):
         
         p0_prev_wins = test_league.players[0].wins
         p1_prev_losses = test_league.players[1].losses
-        test_league.add_game_to_league((0,3), (1,2), 41780)
+        Game.create_from_scores(test_league.players[0], test_league.players[1], 3, 2, date=41780)
         
         self.assertEqual(test_league.players[0].wins, 1 + p0_prev_wins)
         self.assertEqual(test_league.players[1].losses, 1 + p1_prev_losses)
@@ -193,11 +188,11 @@ class TestLeagueGames(unittest.TestCase):
         with open('original_results.csv') as og_results:
             test_league = League.from_results_csv(og_results)
         
-        results = test_league.play_generated_game(0,1)
-        self.assertNotEqual(results[0], None)
-        self.assertNotEqual(results[1], None)
-        self.assertNotEqual(results[2], None)
-        self.assertNotEqual(results[3], None)
+        game = test_league.play_generated_game(0,1)
+        self.assertIsNotNone(game.score_a)
+        self.assertIsNotNone(game.score_b)
+        self.assertIsNotNone(game.player_a_snapshot)
+        self.assertIsNotNone(game.player_b_snapshot)
 
 class TestCSVExport(unittest.TestCase):
 

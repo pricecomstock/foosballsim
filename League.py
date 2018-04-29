@@ -3,7 +3,8 @@ from datetime import datetime, date, timedelta
 
 from Game import Game
 from Player import Player
-from generate_game import generate_game
+
+from foos_config import STARTING_ELO
 
 # This is a League Class
 
@@ -58,7 +59,6 @@ class League:
                 game_player_scores.append((index, int(scores[index])))
         
         game = self.add_game_from_index_score_tuples(game_player_scores[0], game_player_scores[1], date=game_date)
-        print(game.game_description_report())
         return game
     
     def add_game_from_index_score_tuples(self, player_a_score_tuple, player_b_score_tuple, date=date.today()):
@@ -81,6 +81,8 @@ class League:
 
             writer = csv.writer(csvfile)
             writer.writerow(field_names)
+            if elos:
+                elos = [STARTING_ELO for x in range(len(self.players))]
             for index, game in enumerate(self.games):
                 game_date = (game.date - date(1900,1,1)).days + 1
                 row = [index+1, game_date]
@@ -95,9 +97,8 @@ class League:
                 row += scores
                 
                 if elos:
-                    elos = [None for x in range(len(self.players))]
-                    scores[player_a_index] = game.player_a_snapshot.elo
-                    scores[player_b_index] = game.player_b_snapshot.elo
+                    elos[player_a_index] = game.player_a_snapshot.elo
+                    elos[player_b_index] = game.player_b_snapshot.elo
 
                     row += elos
                 writer.writerow(row)

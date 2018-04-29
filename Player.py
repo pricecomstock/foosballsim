@@ -1,5 +1,6 @@
 # This is a Player object
 from elo import elo_change
+from foos_config import STARTING_ELO
 
 class InvalidScoreError(Exception):
     pass
@@ -29,7 +30,7 @@ class Player:
         self.avg_margin_loss = 0.0
 
         self.win_percent = 0.0
-        self.elo = 1000
+        self.elo = STARTING_ELO
         self.king = False
 
     def update_stats(self, own_points, opp_points, opp_king, opp_elo):

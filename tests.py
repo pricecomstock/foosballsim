@@ -203,8 +203,20 @@ class TestCSVExport(unittest.TestCase):
         with open('original_results.csv') as og_results:
             og_results_list = list(og_results)
 
-        test_file = test_league.export_to_csv()
-        print("opening" + test_file)
+        test_file = test_league.export_to_csv(file_name="test-no-elo-export.csv")
+        with open(test_file) as test_results:
+            test_results_list = list(test_results)
+        
+        self.assertListEqual(og_results_list, test_results_list)
+    
+    def test_elo_export(self):
+        with open('original_results.csv') as og_results:
+            test_league = League.from_results_csv(og_results)
+        
+        with open('test_elo_results.csv') as og_results:
+            og_results_list = list(og_results)
+
+        test_file = test_league.export_to_csv(elos=True, file_name="test-elo-export.csv")
         with open(test_file) as test_results:
             test_results_list = list(test_results)
         

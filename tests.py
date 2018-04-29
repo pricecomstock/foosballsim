@@ -203,7 +203,7 @@ class TestCSVExport(unittest.TestCase):
         with open('original_results.csv') as og_results:
             og_results_list = list(og_results)
 
-        test_file = test_league.export_to_csv(file_name="test-no-elo-export.csv")
+        test_file = test_league.export_to_csv(file_name="no-elo-export.test.csv")
         with open(test_file) as test_results:
             test_results_list = list(test_results)
         
@@ -216,7 +216,7 @@ class TestCSVExport(unittest.TestCase):
         with open('test_elo_results.csv') as og_results:
             og_results_list = list(og_results)
 
-        test_file = test_league.export_to_csv(elos=True, file_name="test-elo-export.csv")
+        test_file = test_league.export_to_csv(elos=True, file_name="elo-export.test.csv")
         with open(test_file) as test_results:
             test_results_list = list(test_results)
         

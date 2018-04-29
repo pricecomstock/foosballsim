@@ -1,5 +1,5 @@
 results.csv
-.test.csv
+*.test.csv
 slack_config.py
 *.pyc
 .vscode/

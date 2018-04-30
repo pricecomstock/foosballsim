@@ -1,6 +1,6 @@
 from Player import Player
 from PlayerSnapshot import PlayerSnapshot
-from poisson import poisson_sample
+from league_math.poisson import poisson_sample
 from random import random
 from datetime import datetime, date, timedelta
 

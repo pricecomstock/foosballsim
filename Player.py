@@ -1,5 +1,5 @@
 # This is a Player object
-from elo import elo_change
+from league_math.elo import elo_change
 from foos_config import STARTING_ELO
 
 class InvalidScoreError(Exception):

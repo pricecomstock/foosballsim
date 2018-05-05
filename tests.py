@@ -4,20 +4,25 @@ from League import League
 from Game import Game
 from Player import Player, InvalidScoreError, InvalidKingError
 
+TEST_INPUT_DIR = 'data/'
+TEST_INPUT_RESULTS_FILENAME = 'original_results.csv'
+TEST_INPUT_ELO_FILENAME = 'original_elo_results.csv'
+TEST_FILE_OUTPUT_DIR = 'test_output/'
+
 class TestCSVImport(unittest.TestCase):
 
     def test_league_creation(self):
-        with open('original_results.csv') as og_results:
+        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
             test_league = League.from_results_csv(og_results)
         self.assertIsInstance(test_league, League)
     
     def test_players(self):
-        with open('original_results.csv') as og_results:
+        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
             test_league = League.from_results_csv(og_results)
         self.assertEqual([player.name for player in test_league.players], ['Price', 'Tritz', 'Elliott'])
     
     def test_game_transform(self):
-        with open('original_results.csv') as og_results:
+        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
             test_league = League.from_results_csv(og_results)
         self.assertEqual(
             test_league.add_game_from_row(['1','41780','2','4','']).stateless_report(),
@@ -25,7 +30,7 @@ class TestCSVImport(unittest.TestCase):
         )
     
     def test_game_add(self):
-        with open('original_results.csv') as og_results:
+        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
             test_league = League.from_results_csv(og_results)
         test_league.add_game_from_index_score_tuples((0,3), (2,5))
         self.assertEqual(test_league.games[-1].stateless_report(), 
@@ -137,7 +142,7 @@ class TestPlayerAndStats(unittest.TestCase):
 
 class TestGames(unittest.TestCase):
     def test_random_game(self):
-        with open('original_results.csv') as og_results:
+        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
             test_league = League.from_results_csv(og_results)
         
         player_a, player_b = test_league.players[0:2]
@@ -150,7 +155,7 @@ class TestGames(unittest.TestCase):
 class TestLeagueGames(unittest.TestCase):
     
     def test_stat_updates(self):
-        with open('original_results.csv') as og_results:
+        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
             test_league = League.from_results_csv(og_results)
         
         p0_prev_wins = test_league.players[0].wins
@@ -161,7 +166,7 @@ class TestLeagueGames(unittest.TestCase):
         self.assertEqual(test_league.players[1].losses, 1 + p1_prev_losses)
     
     def test_imported_stats(self):
-        with open('original_results.csv') as og_results:
+        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
             test_league = League.from_results_csv(og_results)
         
         price = test_league.players[0]
@@ -185,7 +190,7 @@ class TestLeagueGames(unittest.TestCase):
         self.assertFalse(elliott.king)
 
     def test_generated_games(self):
-        with open('original_results.csv') as og_results:
+        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
             test_league = League.from_results_csv(og_results)
         
         game = test_league.play_generated_game(0,1)
@@ -197,33 +202,30 @@ class TestLeagueGames(unittest.TestCase):
 class TestCSVExport(unittest.TestCase):
 
     def test_no_elo_export(self):
-        with open('original_results.csv') as og_results:
+        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
             test_league = League.from_results_csv(og_results)
         
-        with open('original_results.csv') as og_results:
+        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
             og_results_list = list(og_results)
 
-        test_file = test_league.export_to_csv(file_name="no-elo-export.test.csv")
+        test_file = test_league.export_to_csv(file_name=TEST_FILE_OUTPUT_DIR + "no-elo-export.test.csv")
         with open(test_file) as test_results:
             test_results_list = list(test_results)
         
         self.assertListEqual(og_results_list, test_results_list)
     
     def test_elo_export(self):
-        with open('original_results.csv') as og_results:
+        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
             test_league = League.from_results_csv(og_results)
         
-        with open('test_elo_results.csv') as og_results:
+        with open(TEST_INPUT_DIR + TEST_INPUT_ELO_FILENAME) as og_results:
             og_results_list = list(og_results)
 
-        test_file = test_league.export_to_csv(elos=True, file_name="elo-export.test.csv")
+        test_file = test_league.export_to_csv(elos=True, file_name=TEST_FILE_OUTPUT_DIR + "elo-export.test.csv")
         with open(test_file) as test_results:
             test_results_list = list(test_results)
         
         self.assertListEqual(og_results_list, test_results_list)
-
-        
-
 
 if __name__ == '__main__':
     unittest.main()

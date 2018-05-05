@@ -27,4 +27,3 @@ def elo_change(ratingA,ratingB,scoreA,scoreB):
     new_ratingB = ratingB - delta
     
     return (new_ratingA, new_ratingB, delta)
-

@@ -1,4 +1,4 @@
-from foos_config import ELO_N, ELO_K
+from config.foos_config import ELO_N, ELO_K
 
 def elo_expected(ratingA, ratingB):
     qa=10.0**(ratingA/ELO_N)

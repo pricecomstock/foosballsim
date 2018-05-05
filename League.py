@@ -4,7 +4,7 @@ from datetime import datetime, date, timedelta
 from Game import Game
 from Player import Player
 
-from foos_config import STARTING_ELO
+from config.foos_config import STARTING_ELO
 
 # This is a League Class
 

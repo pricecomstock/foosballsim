@@ -1,8 +1,8 @@
 from flask import Flask
 
-from League import League
-
 app = Flask(__name__)
+
+from League import League
 
 @app.route('/')
 def hello():

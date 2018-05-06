@@ -6,8 +6,12 @@ name = "pypi"
 [packages]
 flask = "*"
 requests = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
 [requires]
 python_version = "3.6"
+
+[scripts]
+foos = "flask run"

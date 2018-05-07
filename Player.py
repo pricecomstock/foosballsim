@@ -150,3 +150,24 @@ class Player:
             "{0:.1f}".format(self.elo).rjust(7),
             king_string
         ])
+    
+    def to_json(self):
+        return {
+            'name': self.name,
+            
+            'wins': self.wins,
+            'losses': self.losses,
+            'streak': {
+                'winning': self.winning_run,
+                'count': self.run
+            },
+            
+            'psg': self.avg_points_scored,
+            'pag': self.avg_points_allowed,
+            'amv': self.avg_margin_victory,
+            'aml': self.avg_margin_loss,
+
+            'winpct': self.win_percent,
+            'elo': self.elo,
+            'king': self.king
+        }

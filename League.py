@@ -109,3 +109,36 @@ class League:
         for index, player in enumerate(self.players):
             if player.name == name:
                 return index
+    
+    def elo_history_array(self):
+        player_names = [player.name for player in self.players]
+        elos = []
+        for game in self.games:
+            winner, loser, score_winner, score_loser = game.get_winner_loser()
+            elo_change = game.elo_change
+            
+            elo_diff = [0] * len(self.players) # array of zeroes. non participants have no diff
+            elo_diff[player_names.index(winner.name)] = elo_change # winner gains elo
+            elo_diff[player_names.index(loser.name)] = 0 - elo_change # loser loses elo
+
+            if len(elos) == 0:
+                previous_elos = [STARTING_ELO] * len(self.players)
+            else:
+                previous_elos = elos[-1]
+            
+            elos.append([previous + change for previous, change in zip(previous_elos, elo_diff)])
+        
+        return elos
+    
+    def elo_history_json(self):
+        player_names = [player.name for player in self.players]
+        elos = self.elo_history_array()
+        return {
+            "players": player_names,
+            "elos": elos
+        }
+    
+    def game_history_json(self, start_index=0, end_index=None):
+        if end_index == None:
+            end_index = len(self.games) - 1
+        return [game.to_json for game in self.games]

@@ -9,29 +9,31 @@ TEST_INPUT_RESULTS_FILENAME = 'original_results.csv'
 TEST_INPUT_ELO_FILENAME = 'original_elo_results.csv'
 TEST_FILE_OUTPUT_DIR = 'test_output/'
 
+def get_test_league():
+    with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
+        test_league = League.from_results_csv(og_results)
+    
+    return test_league
+
 class TestCSVImport(unittest.TestCase):
 
     def test_league_creation(self):
-        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
-            test_league = League.from_results_csv(og_results)
+        test_league = get_test_league()
         self.assertIsInstance(test_league, League)
     
     def test_players(self):
-        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
-            test_league = League.from_results_csv(og_results)
+        test_league = get_test_league()
         self.assertEqual([player.name for player in test_league.players], ['Price', 'Tritz', 'Elliott'])
     
     def test_game_transform(self):
-        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
-            test_league = League.from_results_csv(og_results)
+        test_league = get_test_league()
         self.assertEqual(
             test_league.add_game_from_row(['1','41780','2','4','']).stateless_report(),
             Game.create_from_scores(test_league.players[0], test_league.players[1], 2, 4, date=date(2014, 5, 22)).stateless_report()
         )
     
     def test_game_add(self):
-        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
-            test_league = League.from_results_csv(og_results)
+        test_league = get_test_league()
         test_league.add_game_from_index_score_tuples((0,3), (2,5))
         self.assertEqual(test_league.games[-1].stateless_report(), 
             Game.create_from_scores(test_league.players[0], test_league.players[2], 3, 5).stateless_report())
@@ -142,8 +144,7 @@ class TestPlayerAndStats(unittest.TestCase):
 
 class TestGames(unittest.TestCase):
     def test_random_game(self):
-        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
-            test_league = League.from_results_csv(og_results)
+        test_league = get_test_league()
         
         player_a, player_b = test_league.players[0:2]
         game = Game.generate_random_from_players(player_a, player_b)
@@ -155,8 +156,7 @@ class TestGames(unittest.TestCase):
 class TestLeagueGames(unittest.TestCase):
     
     def test_stat_updates(self):
-        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
-            test_league = League.from_results_csv(og_results)
+        test_league = get_test_league()
         
         p0_prev_wins = test_league.players[0].wins
         p1_prev_losses = test_league.players[1].losses
@@ -166,8 +166,7 @@ class TestLeagueGames(unittest.TestCase):
         self.assertEqual(test_league.players[1].losses, 1 + p1_prev_losses)
     
     def test_imported_stats(self):
-        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
-            test_league = League.from_results_csv(og_results)
+        test_league = get_test_league()
         
         price = test_league.players[0]
         tritz = test_league.players[1]
@@ -190,8 +189,7 @@ class TestLeagueGames(unittest.TestCase):
         self.assertFalse(elliott.king)
 
     def test_generated_games(self):
-        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
-            test_league = League.from_results_csv(og_results)
+        test_league = get_test_league()
         
         game = test_league.play_generated_game(0,1)
         self.assertIsNotNone(game.score_a)
@@ -202,8 +200,7 @@ class TestLeagueGames(unittest.TestCase):
 class TestCSVExport(unittest.TestCase):
 
     def test_no_elo_export(self):
-        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
-            test_league = League.from_results_csv(og_results)
+        test_league = get_test_league()
         
         with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
             og_results_list = list(og_results)
@@ -215,8 +212,7 @@ class TestCSVExport(unittest.TestCase):
         self.assertListEqual(og_results_list, test_results_list)
     
     def test_elo_export(self):
-        with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
-            test_league = League.from_results_csv(og_results)
+        test_league = get_test_league()
         
         with open(TEST_INPUT_DIR + TEST_INPUT_ELO_FILENAME) as og_results:
             og_results_list = list(og_results)
@@ -226,6 +222,72 @@ class TestCSVExport(unittest.TestCase):
             test_results_list = list(test_results)
         
         self.assertListEqual(og_results_list, test_results_list)
+
+class TestJSONExport(unittest.TestCase):
+
+    def test_player_json(self):
+        test_league = get_test_league()
+
+        test_player_json = test_league.players[0].to_json()
+
+        self.assertDictContainsSubset({
+            'name': 'Price',
+            'wins': 119,
+            'losses': 219,
+            'king': False,
+            'streak': {
+                'count': 1,
+                'winning': False
+            }
+        }, test_player_json)
+        
+        self.assertIn('psg', test_player_json)
+        self.assertIn('pag', test_player_json)
+        self.assertIn('winpct', test_player_json)
+        self.assertIn('amv', test_player_json)
+        self.assertIn('aml', test_player_json)
+        self.assertIn('elo', test_player_json)
+    
+    def test_game_compact_json(self):
+        test_league = get_test_league()
+        test_game = Game.create_from_scores(test_league.players[0], test_league.players[1], 3, 2)
+        test_game_json = test_game.to_json(verbose_players=False)
+        
+        self.assertDictContainsSubset({
+            'kingChange': True,
+            'overtime': False,
+            'date': date.today().toordinal(),
+        }, test_game_json)
+
+        self.assertEqual('Price', test_game_json['winner']['player'])
+        self.assertIn('score', test_game_json['winner'])
+        
+        self.assertEqual('Tritz', test_game_json['loser']['player'])
+        self.assertIn('score', test_game_json['loser'])
+
+    def test_game_verbose_json(self):
+        test_league = get_test_league()
+        test_game = Game.create_from_scores(test_league.players[0], test_league.players[1], 3, 2)
+        test_game_json = test_game.to_json(verbose_players=True)
+        self.assertDictContainsSubset({
+            'kingChange': True,
+            'overtime': False,
+            'date': date.today().toordinal(),
+        }, test_game_json)
+
+        self.assertIn('name', test_game_json['winner']['player'])
+        self.assertIn('score', test_game_json['winner'])
+        
+        self.assertIn('name', test_game_json['loser']['player'])
+        self.assertIn('score', test_game_json['loser'])
+    
+    def test_elo_history_array(self):
+        test_league = get_test_league()
+        
+        elo_history = test_league.elo_history_array()
+        self.assertEqual(elo_history[0], [1025.0,975.0,1000.0])
+        for test_elo, known_elo in zip(elo_history[-1], [1024.54957202,1117.58767977,857.862748209]):
+            self.assertAlmostEqual(test_elo, known_elo)
 
 if __name__ == '__main__':
     unittest.main()

@@ -14,4 +14,4 @@ tornado = "*"
 python_version = "3.6"
 
 [scripts]
-foos = "flask run"
+foos = "python api.py"

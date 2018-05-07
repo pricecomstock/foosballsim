@@ -26,6 +26,8 @@ class Game:
         player_a.update_stats(score_a, score_b, player_b_king, player_b_elo)
         player_b.update_stats(score_b, score_a, player_a_king, player_a_elo)
 
+        self.elo_change = abs(player_a.elo - player_a_elo)
+
         self.player_a_snapshot = PlayerSnapshot(player_a)
         self.player_b_snapshot = PlayerSnapshot(player_b)
 
@@ -79,3 +81,21 @@ class Game:
         else:
             king_string = ''
         return "{} defeats {} {}-{} {}".format(winner.name, loser.name, str(score_winner), str(score_loser), king_string)
+    
+    def to_json(self, verbose_players=False):
+        winner, loser, score_winner, score_loser = self.get_winner_loser()
+
+        return {
+            'winner': {
+                'player': winner.to_json() if verbose_players else winner.name,
+                'score': score_winner
+            },
+            'loser': {
+                'player': loser.to_json() if verbose_players else loser.name,
+                'score': score_loser
+            },
+            'date': self.date.toordinal(),
+            'overtime': self.overtime,
+            'kingChange': self.king_change,
+            'eloChange': self.elo_change
+        }

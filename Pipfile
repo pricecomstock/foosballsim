@@ -14,4 +14,4 @@ tornado = "*"
 python_version = "3.6"
 
 [scripts]
-foos = "python api.py"
+foos = "python main.py"

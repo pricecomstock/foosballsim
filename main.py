@@ -49,6 +49,7 @@ def make_app():
         (r"/api/elos", EloHandler),
         (r"/api/gamehistory", FullGameHistoryHandler),
         (r"/api/roundrobin", PlayRoundRobinHandler),
+        (r'/(.*)', tornado.web.StaticFileHandler, {'path': 'static/'}),
     ])
 
 if __name__ == "__main__":

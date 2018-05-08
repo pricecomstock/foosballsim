@@ -20,10 +20,6 @@ except IOError:
 def save_league(file_name=RESULTS_FILE_NAME):
     league.export_to_csv(elos=False, file_name=file_name)
 
-class MainHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.write(league.stat_report())
-
 class EloHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*")
@@ -45,11 +41,10 @@ class PlayRoundRobinHandler(tornado.web.RequestHandler):
 
 def make_app():
     return tornado.web.Application([
-        (r"/", MainHandler),
         (r"/api/elos", EloHandler),
         (r"/api/gamehistory", FullGameHistoryHandler),
         (r"/api/roundrobin", PlayRoundRobinHandler),
-        (r'/(.*)', tornado.web.StaticFileHandler, {'path': 'static/'}),
+        (r'/(.*)', tornado.web.StaticFileHandler, {'path': 'static/', "default_filename": "index.html"}),
     ])
 
 if __name__ == "__main__":

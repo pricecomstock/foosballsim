@@ -28,6 +28,10 @@ class EloHandler(tornado.web.RequestHandler):
     def get(self):
         self.write(league.elo_history_json())
 
+class FullGameHistoryHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write({'games': league.game_history_json()})
+
 class PlayRoundRobinHandler(tornado.web.RequestHandler):
     def post(self):
         round_robin_games = league.play_round_robin()
@@ -38,6 +42,7 @@ def make_app():
     return tornado.web.Application([
         (r"/", MainHandler),
         (r"/api/elos", EloHandler),
+        (r"/api/gamehistory", FullGameHistoryHandler),
         (r"/api/roundrobin", PlayRoundRobinHandler),
     ])
 

@@ -230,17 +230,12 @@ class TestJSONExport(unittest.TestCase):
 
         test_player_json = test_league.players[0].to_json()
 
-        self.assertDictContainsSubset({
-            'name': 'Price',
-            'wins': 119,
-            'losses': 219,
-            'king': False,
-            'streak': {
-                'count': 1,
-                'winning': False
-            }
-        }, test_player_json)
-        
+        self.assertEqual(test_player_json['name'], 'Price')
+        self.assertEqual(test_player_json['wins'], 119)
+        self.assertEqual(test_player_json['losses'], 219)
+        self.assertEqual(test_player_json['king'], False)
+        self.assertEqual(test_player_json['streak'], {'count':1, 'winning': False})
+
         self.assertIn('psg', test_player_json)
         self.assertIn('pag', test_player_json)
         self.assertIn('winpct', test_player_json)
@@ -253,11 +248,9 @@ class TestJSONExport(unittest.TestCase):
         test_game = Game.create_from_scores(test_league.players[0], test_league.players[1], 3, 2)
         test_game_json = test_game.to_json(verbose_players=False)
         
-        self.assertDictContainsSubset({
-            'kingChange': True,
-            'overtime': False,
-            'date': date.today().toordinal(),
-        }, test_game_json)
+        self.assertTrue(test_game_json['kingChange'])
+        self.assertFalse(test_game_json['overtime'])
+        self.assertEqual(test_game_json['date'], date.today().toordinal())
 
         self.assertEqual('Price', test_game_json['winner']['player'])
         self.assertIn('score', test_game_json['winner'])
@@ -269,11 +262,10 @@ class TestJSONExport(unittest.TestCase):
         test_league = get_test_league()
         test_game = Game.create_from_scores(test_league.players[0], test_league.players[1], 3, 2)
         test_game_json = test_game.to_json(verbose_players=True)
-        self.assertDictContainsSubset({
-            'kingChange': True,
-            'overtime': False,
-            'date': date.today().toordinal(),
-        }, test_game_json)
+        
+        self.assertTrue(test_game_json['kingChange'])
+        self.assertFalse(test_game_json['overtime'])
+        self.assertEqual(test_game_json['date'], date.today().toordinal())
 
         self.assertIn('name', test_game_json['winner']['player'])
         self.assertIn('score', test_game_json['winner'])

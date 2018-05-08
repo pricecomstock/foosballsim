@@ -1,6 +1,8 @@
 import csv
 from datetime import datetime, date, timedelta
 
+from itertools import combinations
+
 from Game import Game
 from Player import Player
 
@@ -35,8 +37,26 @@ class League:
         game = Game.generate_random_from_players(player_a, player_b)
         self.games.append(game)
         
-        return (game)
+        return game
     
+    def play_round_robin(self):
+        indices_to_play = list(combinations(range(len(self.players)), 2)) # every 2 player match possible
+
+        # def kingsort(player_indices):
+        #     return 1 if self.players[player_indices[0]].king or self.players[player_indices[1]].king else 0
+
+        # indices_to_play.sort(kingsort) # King goes last
+
+        # TODO: make it so that players go in order of round robin winpct against king
+
+        round_robin_games = []
+
+        for player_a_index, player_b_index in indices_to_play:
+            game = self.play_generated_game(player_a_index, player_b_index)
+            round_robin_games.append(game)
+        
+        return round_robin_games
+
     def stat_report(self):
         report = ''
         report += self.players[0].str_header() + '\n'
@@ -72,7 +92,7 @@ class League:
         self.games.append(game)
         return game
     
-    def export_to_csv(self, elos=False, file_name=date.today().isoformat() + '-league.csv'):
+    def export_to_csv(self, elos=False, file_name='test_output/' + date.today().isoformat() + 'test.csv'):
         with open(file_name, 'w') as csvfile:
             field_names = ["Game", "Date"]
             field_names += [player.name for player in self.players]

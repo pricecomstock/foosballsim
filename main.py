@@ -30,6 +30,11 @@ class EloHandler(tornado.web.RequestHandler):
         self.write(league.elo_history_json())
 
 class FullGameHistoryHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'GET')
+
     def get(self):
         self.write({'games': league.game_history_json()})
 

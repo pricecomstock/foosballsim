@@ -1,24 +1,34 @@
 import tornado.ioloop
 import tornado.web
 
-from config.foos_config import RESULTS_FILE_NAME
+from config.foos_config import DEFAULT_LEAGUE_INPUT_FILES
 
 import json
 
 from League import League
 
-try:
-    with open(RESULTS_FILE_NAME) as og_results:
-        league = League.from_results_csv(og_results)
-except IOError:
-    with open('data/original_results.csv') as og_results:
-        league = League.from_results_csv(og_results)
+leagues = {}
 
-# Everything in here is sort of weirdly abstracted because of the idea that this might
-# one day keep track of multiple leagues at once. e.g. if a large simulation is run in
-# a secondary league instance
-def save_league(file_name=RESULTS_FILE_NAME):
-    league.export_to_csv(elos=False, file_name=file_name)
+for league_name in DEFAULT_LEAGUE_INPUT_FILES:
+    try:
+        with open(DEFAULT_LEAGUE_INPUT_FILES[league_name]) as original_results:
+            # { league_name: LeagueObject }
+            leagues.setdefault(league_name, League.from_results_csv(original_results))
+    except IOError:
+        pass
+
+# This would be a little more elegant with a database at this point but MVP!!!
+def save_league(league_name):
+    leagues[league_name].export_to_csv(elos=False, file_name=league_name + ".csv")
+
+class LeagueListHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'GET')
+
+    def get(self):
+        self.write({"leagues": [name for name in leagues]})
 
 class EloHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
@@ -26,8 +36,8 @@ class EloHandler(tornado.web.RequestHandler):
         self.set_header("Access-Control-Allow-Headers", "x-requested-with")
         self.set_header('Access-Control-Allow-Methods', 'GET')
 
-    def get(self):
-        self.write(league.elo_history_json())
+    def get(self, league_name):
+        self.write(leagues[league_name].elo_history_json())
 
 class FullGameHistoryHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
@@ -35,20 +45,26 @@ class FullGameHistoryHandler(tornado.web.RequestHandler):
         self.set_header("Access-Control-Allow-Headers", "x-requested-with")
         self.set_header('Access-Control-Allow-Methods', 'GET')
 
-    def get(self):
-        self.write({'games': league.game_history_json()})
+    def get(self, league_name):
+        self.write({'games': leagues[league_name].game_history_json()})
 
 class PlayRoundRobinHandler(tornado.web.RequestHandler):
-    def post(self):
-        round_robin_games = league.play_round_robin()
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'GET')
+        
+    def post(self, league_name):
+        round_robin_games = leagues[league_name].play_round_robin()
 
         self.write({'games': [game.to_json(verbose_players=True) for game in round_robin_games]})
 
 def make_app():
     return tornado.web.Application([
-        (r"/api/elos", EloHandler),
-        (r"/api/gamehistory", FullGameHistoryHandler),
-        (r"/api/roundrobin", PlayRoundRobinHandler),
+        (r"/api/listleagues", LeagueListHandler),
+        (r"/api/elos/(.*)", EloHandler),
+        (r"/api/gamehistory/(.*)", FullGameHistoryHandler),
+        (r"/api/roundrobin/(.*)", PlayRoundRobinHandler),
         (r'/(.*)', tornado.web.StaticFileHandler, {'path': 'static/', "default_filename": "index.html"}),
     ])
 

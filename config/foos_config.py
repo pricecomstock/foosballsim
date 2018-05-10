@@ -5,4 +5,8 @@ ELO_N=290.0
 STARTING_ELO=1000.0
 
 # FILES
-RESULTS_FILE_NAME='results/league.csv'
+DEFAULT_LEAGUE_INPUT_FILES = {
+    'og': 'data/original_results.csv'
+}
+
+'results/league.csv'

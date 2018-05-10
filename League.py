@@ -163,3 +163,9 @@ class League:
             end_index = len(self.games) - 1
         
         return [game.to_json() for game in self.games[start_index:end_index]]
+
+    def summaryJson(self):
+        return {
+            'games': len(self.games),
+            'players': len(self.players),
+        }

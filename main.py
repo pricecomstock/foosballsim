@@ -28,7 +28,15 @@ class LeagueListHandler(tornado.web.RequestHandler):
         self.set_header('Access-Control-Allow-Methods', 'GET')
 
     def get(self):
-        self.write({"leagues": [name for name in leagues]})
+        # e.g. {'players': 3, 'games': 470, 'name': 'og'}
+        league_list = []
+
+        # This is gross and I should probably make an object to keep track of all the leagues
+        for league_name in leagues:
+            summary = leagues[league_name].summaryJson()
+            summary.update({'name': league_name})
+            league_list.append(summary)
+        self.write({"leagues": league_list})
 
 class EloHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
@@ -53,7 +61,7 @@ class PlayRoundRobinHandler(tornado.web.RequestHandler):
         self.set_header("Access-Control-Allow-Origin", "*")
         self.set_header("Access-Control-Allow-Headers", "x-requested-with")
         self.set_header('Access-Control-Allow-Methods', 'GET')
-        
+
     def post(self, league_name):
         round_robin_games = leagues[league_name].play_round_robin()
 

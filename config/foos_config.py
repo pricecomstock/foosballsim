@@ -6,7 +6,8 @@ STARTING_ELO=1000.0
 
 # FILES
 DEFAULT_LEAGUE_INPUT_FILES = {
-    'og': 'data/original_results.csv'
+    'original-PTE': 'data/original_results.csv',
+    'original-8': 'data/original_8.csv'
 }
 
 'results/league.csv'

@@ -19,7 +19,7 @@ for league_name in DEFAULT_LEAGUE_INPUT_FILES:
 
 # This would be a little more elegant with a database at this point but MVP!!!
 def save_league(league_name):
-    leagues[league_name].export_to_csv(elos=False, file_name=league_name + ".csv")
+    leagues[league_name].export_to_csv(elos=False, file_name='results/' + league_name + ".csv")
 
 class LeagueListHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
@@ -72,7 +72,7 @@ def make_app():
         (r"/api/listleagues", LeagueListHandler),
         (r"/api/elos/(.*)", EloHandler),
         (r"/api/gamehistory/(.*)", FullGameHistoryHandler),
-        (r"/api/roundrobin/(.*)", PlayRoundRobinHandler),
+        # (r"/api/roundrobin/(.*)", PlayRoundRobinHandler),
         (r'/(.*)', tornado.web.StaticFileHandler, {'path': 'static/', "default_filename": "index.html"}),
     ])
 

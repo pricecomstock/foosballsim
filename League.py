@@ -162,7 +162,7 @@ class League:
         if end_index == None:
             end_index = len(self.games) - 1
         
-        return [game.to_json() for game in self.games[start_index:end_index]]
+        return [game.to_json(verbose_players=True) for game in self.games[start_index:end_index]]
 
     def summaryJson(self):
         return {

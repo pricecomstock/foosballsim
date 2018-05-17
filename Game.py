@@ -77,10 +77,10 @@ class Game:
     def game_description_report(self):
         winner, loser, score_winner, score_loser = self.get_winner_loser()
 
-        king_string = 'to become king' if self.king_change else ''
-        overtime_string = 'in sudden death' if self.overtime else ''
+        king_string = ' to become king' if self.king_change else ''
+        overtime_string = ' in sudden death' if self.overtime else ''
         
-        return "{} defeats {} {}-{} {} {}!".format(winner.name, loser.name, str(score_winner), str(score_loser), overtime_string, king_string)
+        return "*{}* defeats *{}* {}-{}{}{}!".format(winner.name, loser.name, str(score_winner), str(score_loser), overtime_string, king_string)
     
     def to_json(self, verbose_players=False):
         winner, loser, score_winner, score_loser = self.get_winner_loser()
@@ -113,11 +113,11 @@ class Game:
             'Harsh': '#FAF'
         }
 
-        report = self.game_description_report
+        report = self.game_description_report()
         winner, loser, score_winner, score_loser = self.get_winner_loser()
-        summary_template = '{} - {} [{:.1}-->{:.1} | {:.1}]'
-        winner_summary = summary_template.format(str(score_winner), winner.name, str(winner.elo - self.elo_change), str(winner.elo), '+' + str(self.elo_change))
-        loser_summary = summary_template.format(str(score_loser), loser.name, str(loser.elo + self.elo_change), str(loser.elo), '-' + str(self.elo_change))
+        summary_template = '{0} - {1} [{2:.1f}-->{3:.1f} | {4:+.1f}]'
+        winner_summary = summary_template.format(score_winner, winner.name, winner.elo - self.elo_change, winner.elo, self.elo_change)
+        loser_summary = summary_template.format(score_loser, loser.name, loser.elo + self.elo_change, loser.elo, self.elo_change)
         return {
             'text':report,
             'attachments':[

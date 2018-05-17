@@ -2,14 +2,14 @@ import tornado.ioloop
 import tornado.web
 
 from config.foos_config import DEFAULT_LEAGUE_INPUT_FILES
-from config.webhook_config import WEBHOOKS
+from config.webhook_config import NOTIFIERS
 
 import json
 
 from League import League
 
 leagues = {}
-league_webhooks = {}
+league_notifiers = {}
 
 for league_name in DEFAULT_LEAGUE_INPUT_FILES:
     try:
@@ -19,11 +19,11 @@ for league_name in DEFAULT_LEAGUE_INPUT_FILES:
     except IOError:
         pass
 
-for webhook in WEBHOOKS:
+for notifier in NOTIFIERS:
     for league_name in leagues:
-        if league_name in webhook['leagues']:
-            league_webhooks.setdefault(league_name, [])
-            league_webhooks[league_name].append({'url': webhook['url'], 'template': webhook['template']})
+        if league_name in notifier['leagues']:
+            league_notifiers.setdefault(league_name, [])
+            league_notifiers[league_name].append((notifier['game_notifier'], notifier['league_notifier']))
 
 # This would be a little more elegant with a database at this point but MVP!!!
 def save_league(league_name):
@@ -71,16 +71,25 @@ class PlayRoundRobinHandler(tornado.web.RequestHandler):
         self.set_header('Access-Control-Allow-Methods', 'GET')
 
     def post(self, league_name):
-        round_robin_games = leagues[league_name].play_round_robin()
+        if league_name in leagues:
+            round_robin_games = leagues[league_name].play_round_robin()
 
-        self.write({'games': [game.to_json(verbose_players=True) for game in round_robin_games]})
+            if league_name in leagues: # is there a notifier on this league?
+                for game_notifier, league_notifier in league_notifiers[league_name]:
+                    for game in round_robin_games:
+                        game_notifier(game)
+                    league_notifier(leagues[league_name])
+
+            self.write({'games': [game.to_json(verbose_players=True) for game in round_robin_games]})
+        else:
+            self.write({'success': False, 'error': 'league not found'})
 
 def make_app():
     return tornado.web.Application([
         (r"/api/listleagues", LeagueListHandler),
         (r"/api/elos/(.*)", EloHandler),
         (r"/api/gamehistory/(.*)", FullGameHistoryHandler),
-        # (r"/api/roundrobin/(.*)", PlayRoundRobinHandler),
+        (r"/api/roundrobin/(.*)", PlayRoundRobinHandler),
         (r'/(.*)', tornado.web.StaticFileHandler, {'path': 'static/', "default_filename": "index.html"}),
     ])
 

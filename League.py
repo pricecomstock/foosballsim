@@ -169,3 +169,9 @@ class League:
             'games': len(self.games),
             'players': len(self.players),
         }
+    
+
+    def slack_report(self):
+        return {
+            'text': 'STAT REPORT: ```' + self.stat_report() + '```'
+        }

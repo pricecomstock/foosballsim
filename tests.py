@@ -3,6 +3,7 @@ from datetime import date
 from League import League
 from Game import Game
 from Player import Player, InvalidScoreError, InvalidKingError
+from config.webhook_config import eternal_season_slack_function
 
 TEST_INPUT_DIR = 'data/'
 TEST_INPUT_RESULTS_FILENAME = 'original_results.csv'
@@ -280,6 +281,15 @@ class TestJSONExport(unittest.TestCase):
         self.assertEqual(elo_history[0], [1025.0,975.0,1000.0])
         for test_elo, known_elo in zip(elo_history[-1], [1024.54957202,1117.58767977,857.862748209]):
             self.assertAlmostEqual(test_elo, known_elo)
+    
+class TestSlackOutput(unittest.TestCase):
+    def test_slack_webhook(self):
+        test_league = get_test_league()
+        eternal_season_slack_function(test_league.games[0])
+    
+    # def test_game_report(self):
+    #     test_league = get_test_league()
+    #     eternal_season_slack_function(test_league.games[0])
 
 if __name__ == '__main__':
     unittest.main()

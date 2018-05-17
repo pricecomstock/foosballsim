@@ -76,11 +76,11 @@ class Game:
 
     def game_description_report(self):
         winner, loser, score_winner, score_loser = self.get_winner_loser()
-        if self.king_change:
-            king_string = 'to become king'
-        else:
-            king_string = ''
-        return "{} defeats {} {}-{} {}".format(winner.name, loser.name, str(score_winner), str(score_loser), king_string)
+
+        king_string = 'to become king' if self.king_change else ''
+        overtime_string = 'in sudden death' if self.overtime else ''
+        
+        return "{} defeats {} {}-{} {} {}!".format(winner.name, loser.name, str(score_winner), str(score_loser), overtime_string, king_string)
     
     def to_json(self, verbose_players=False):
         winner, loser, score_winner, score_loser = self.get_winner_loser()
@@ -98,4 +98,44 @@ class Game:
             'overtime': self.overtime,
             'kingChange': self.king_change,
             'eloChange': self.elo_change
+        }
+    
+    def slack_report(self):
+        # TODO: Extract this and attach it to player objects and send it to front end so there's a single source of truth
+        color_map = {
+            'Price': '#66D',
+            'Tritz': '#D66',
+            'Elliott': '#8C8',
+            'Mark': '#B82',
+            'Joe': '#ADF',
+            'Erick': '#FA4',
+            'Bijan': '#C7D',
+            'Harsh': '#FAF'
+        }
+
+        report = self.game_description_report
+        winner, loser, score_winner, score_loser = self.get_winner_loser()
+        summary_template = '{} - {} [{:.1}-->{:.1} | {:.1}]'
+        winner_summary = summary_template.format(str(score_winner), winner.name, str(winner.elo - self.elo_change), str(winner.elo), '+' + str(self.elo_change))
+        loser_summary = summary_template.format(str(score_loser), loser.name, str(loser.elo + self.elo_change), str(loser.elo), '-' + str(self.elo_change))
+        return {
+            'text':report,
+            'attachments':[
+                {
+                    'color': color_map[winner.name],
+                    'fallback': report,
+                    'fields':[
+                        {
+                            'title': winner_summary,
+                            'value': ':soccer:'*score_winner,
+                            'short': False
+                        },
+                        {
+                            'title': loser_summary,
+                            'value': ':soccer:'*score_loser,
+                            'short': False
+                        }
+                    ]
+                }
+            ]
         }

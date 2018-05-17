@@ -2,12 +2,14 @@ import tornado.ioloop
 import tornado.web
 
 from config.foos_config import DEFAULT_LEAGUE_INPUT_FILES
+from config.webhook_config import WEBHOOKS
 
 import json
 
 from League import League
 
 leagues = {}
+league_webhooks = {}
 
 for league_name in DEFAULT_LEAGUE_INPUT_FILES:
     try:
@@ -16,6 +18,12 @@ for league_name in DEFAULT_LEAGUE_INPUT_FILES:
             leagues.setdefault(league_name, League.from_results_csv(original_results))
     except IOError:
         pass
+
+for webhook in WEBHOOKS:
+    for league_name in leagues:
+        if league_name in webhook['leagues']:
+            league_webhooks.setdefault(league_name, [])
+            league_webhooks[league_name].append({'url': webhook['url'], 'template': webhook['template']})
 
 # This would be a little more elegant with a database at this point but MVP!!!
 def save_league(league_name):

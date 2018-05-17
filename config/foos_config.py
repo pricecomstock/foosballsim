@@ -10,5 +10,3 @@ DEFAULT_LEAGUE_INPUT_FILES = {
     'original-8': 'data/original_8.csv',
     'the-eternal-season': 'results/the-eternal-season.csv'
 }
-
-'results/league.csv'

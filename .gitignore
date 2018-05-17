@@ -1,6 +1,5 @@
 results.csv
 *.test.csv
-slack_config.py
 *.pyc
 .vscode/
 *-league.csv
@@ -15,3 +14,5 @@ htmlcov/
 
 build/
 *.egg-info/
+
+config/secrets.py

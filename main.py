@@ -79,6 +79,9 @@ class PlayRoundRobinHandler(tornado.web.RequestHandler):
                     for game in round_robin_games:
                         game_notifier(game)
                     league_notifier(leagues[league_name])
+            
+            if not leagues[league_name].static_league:
+                save_league(league_name)
 
             self.write({'games': [game.to_json(verbose_players=True) for game in round_robin_games]})
         else:

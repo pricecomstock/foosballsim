@@ -3,7 +3,8 @@ from datetime import date
 from League import League
 from Game import Game
 from Player import Player, InvalidScoreError, InvalidKingError
-from config.webhook_config import eternal_season_slack_function
+from config.webhook_config import eternal_season_slack_game_notifier
+from config.webhook_config import eternal_season_slack_league_notifier
 
 TEST_INPUT_DIR = 'data/'
 TEST_INPUT_RESULTS_FILENAME = 'original_results.csv'
@@ -12,7 +13,13 @@ TEST_FILE_OUTPUT_DIR = 'test_output/'
 
 def get_test_league():
     with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
-        test_league = League.from_results_csv(og_results)
+        test_league = League.from_results_csv(og_results, static_league = False)
+    
+    return test_league
+
+def get_static_league():
+    with open(TEST_INPUT_DIR + TEST_INPUT_RESULTS_FILENAME) as og_results:
+        test_league = League.from_results_csv(og_results, static_league = True)
     
     return test_league
 
@@ -38,6 +45,10 @@ class TestCSVImport(unittest.TestCase):
         test_league.add_game_from_index_score_tuples((0,3), (2,5))
         self.assertEqual(test_league.games[-1].stateless_report(), 
             Game.create_from_scores(test_league.players[0], test_league.players[2], 3, 5).stateless_report())
+    
+    def test_static_league(self):
+        # this causing an exception is test failure
+        test_league = get_static_league()
 
 class TestPlayerAndStats(unittest.TestCase):
     def test_creation(self):
@@ -283,13 +294,15 @@ class TestJSONExport(unittest.TestCase):
             self.assertAlmostEqual(test_elo, known_elo)
     
 class TestSlackOutput(unittest.TestCase):
-    def test_slack_webhook(self):
-        test_league = get_test_league()
-        eternal_season_slack_function(test_league.games[0])
-    
-    # def test_game_report(self):
+    # These are commented out to prevent spam
+    # def test_slack_webhook(self):
     #     test_league = get_test_league()
-    #     eternal_season_slack_function(test_league.games[0])
+    #     eternal_season_slack_game_notifier(test_league.games[0])
+    
+    # def test_league_report(self):
+    #     test_league = get_test_league()
+    #     eternal_season_slack_league_notifier(test_league)
+    pass
 
 if __name__ == '__main__':
     unittest.main()

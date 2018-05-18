@@ -10,32 +10,44 @@ from config.foos_config import STARTING_ELO
 
 # This is a League Class
 
+
+class StaticLeagueModifyException(Exception):
+    def __init__(self, message):
+        self.message = message
+
 class League:
     # players = [] # this would be shared by all instances of League
-    def __init__(self, players, game_rows): # first argument to methods is self
+    def __init__(self, players, game_rows, static_league): # first argument to methods is self
         self.players = players
         self.games = []
+        self.static_league = False
         
         first_game = True
         for game_row in game_rows:
             self.add_game_from_row(game_row, first_game)
             first_game = False # only the first game should be the first game, duh
+        
+        self.static_league = static_league
+        
     
     @classmethod
-    def from_results_csv(cls, results_csv):
+    def from_results_csv(cls, results_csv, static_league=False):
         contents = list(csv.reader(results_csv))
         headers = contents[0]
         player_names = headers[2:]
         game_rows = contents[1:]
         players = [Player(pname) for pname in player_names]
-        return cls(players, game_rows)
+        return cls(players, game_rows, static_league)
 
     def play_generated_game(self, player_a_index, player_b_index):
+
         player_a = self.players[player_a_index]
         player_b = self.players[player_b_index]
         
         game = Game.generate_random_from_players(player_a, player_b)
-        self.games.append(game)
+        
+        if not self.static_league:
+            self.games.append(game)
         
         return game
     
@@ -53,7 +65,8 @@ class League:
 
         for player_a_index, player_b_index in indices_to_play:
             game = self.play_generated_game(player_a_index, player_b_index)
-            round_robin_games.append(game)
+            if not self.static_league:
+                round_robin_games.append(game)
         
         return round_robin_games
 
@@ -65,32 +78,37 @@ class League:
 
     # This will take a "score marquee array" and transform it to (player_id, score) pairs in a dict with metadata
     def add_game_from_row(self, game_result, first_game=False):
+        if self.static_league:
+            raise StaticLeagueModifyException("Cannot add games to static league!")
+        else:
+            # All fields of game_result are strings
+            td = timedelta(days=int(game_result[1])-1)
+            game_date = date(1900,1,1) + td
+            
+            scores = game_result[2:]
 
-        # All fields of game_result are strings
-        td = timedelta(days=int(game_result[1])-1)
-        game_date = date(1900,1,1) + td
-        
-        scores = game_result[2:]
-
-        # Generate a tuple (player_id, score)
-        game_player_scores = []
-        for index in range(len(scores)):
-            if scores[index] != '': # this player #index was in the game
-                game_player_scores.append((index, int(scores[index])))
-        
-        game = self.add_game_from_index_score_tuples(game_player_scores[0], game_player_scores[1], date=game_date)
-        return game
+            # Generate a tuple (player_id, score)
+            game_player_scores = []
+            for index in range(len(scores)):
+                if scores[index] != '': # this player #index was in the game
+                    game_player_scores.append((index, int(scores[index])))
+            
+            game = self.add_game_from_index_score_tuples(game_player_scores[0], game_player_scores[1], date=game_date)
+            return game
     
     def add_game_from_index_score_tuples(self, player_a_score_tuple, player_b_score_tuple, date=date.today()):
-        player_a = self.players[player_a_score_tuple[0]]
-        player_b = self.players[player_b_score_tuple[0]]
-        if len(self.games) == 0:
-            first_game = True
+        if self.static_league:
+            raise StaticLeagueModifyException("")
         else:
-            first_game = False
-        game = Game.create_from_scores(player_a, player_b, player_a_score_tuple[1], player_b_score_tuple[1], date=date, first_game=first_game)
-        self.games.append(game)
-        return game
+            player_a = self.players[player_a_score_tuple[0]]
+            player_b = self.players[player_b_score_tuple[0]]
+            if len(self.games) == 0:
+                first_game = True
+            else:
+                first_game = False
+            game = Game.create_from_scores(player_a, player_b, player_a_score_tuple[1], player_b_score_tuple[1], date=date, first_game=first_game)
+            self.games.append(game)
+            return game
     
     def export_to_csv(self, elos=False, file_name='test_output/' + date.today().isoformat() + 'test.csv'):
         with open(file_name, 'w') as csvfile:

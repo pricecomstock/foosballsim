@@ -76,13 +76,31 @@ class Game:
         else:
             return (self.player_b_snapshot, self.player_a_snapshot, self.score_b, self.score_a)
 
-    def game_description_report(self):
+    def game_description_report(self, slack_emojis=False):
         winner, loser, score_winner, score_loser = self.get_winner_loser()
 
-        king_string = ' to become king' if self.king_change else ''
-        overtime_string = ' in sudden death' if self.overtime else ''
+        if slack_emojis:
+            king_string = ' to become :crown: King' if self.king_change else ''
+            overtime_string = ' in :skull_and_crossbones: sudden death' if self.overtime else ''
+            winner_was_king_string = ':crown: King' if (self.king_change and loser.king) or (not self.king_change and winner.king) else ''
+            loser_was_king_string = ':crown: King' if self.king_change and winner.king else ''
+        else:
+            king_string = ' to become king' if self.king_change else ''
+            overtime_string = ' in sudden death' if self.overtime else ''
+            winner_was_king_string = 'King' if (self.king_change and loser.king) or (not self.king_change and winner.king) else ''
+            loser_was_king_string = 'King' if self.king_change and winner.king else ''
         
-        return "GAME #{}: *{}* defeats *{}* {}-{}{}{}!".format(str(self.game_number), winner.name, loser.name, str(score_winner), str(score_loser), overtime_string, king_string)
+        return "GAME #{game_number:n}: {winner_was_king_string} *{winner}* defeats {loser_was_king_string} *{loser}* {score_winner:n}-{score_loser:n}{overtime_string}{king_string}!".format(
+            game_number = self.game_number,
+            winner_was_king_string = winner_was_king_string,
+            winner = winner.name,
+            loser_was_king_string = loser_was_king_string,
+            loser = loser.name,
+            score_winner = score_winner,
+            score_loser = score_loser,
+            overtime_string = overtime_string,
+            king_string = king_string
+        )
     
     def to_json(self, verbose_players=False):
         winner, loser, score_winner, score_loser = self.get_winner_loser()
@@ -106,8 +124,8 @@ class Game:
         # TODO: Extract this and attach it to player objects and send it to front end so there's a single source of truth
         color_map = {
             'Price': '#66D',
-            'Tritz': '#D66',
-            'Elliott': '#8C8',
+            'Tritz': '#D77',
+            'Elliott': '#9C9',
             'Mark': '#B82',
             'Joe': '#ADF',
             'Erick': '#FA4',
@@ -115,7 +133,7 @@ class Game:
             'Harsh': '#FAF'
         }
 
-        report = self.game_description_report()
+        report = self.game_description_report(slack_emojis=True)
         winner, loser, score_winner, score_loser = self.get_winner_loser()
         summary_template = '{0} - {1} [{2:.1f}-->{3:.1f} | {4:+.1f}]'
         winner_summary = summary_template.format(score_winner, winner.name, winner.elo - self.elo_change, winner.elo, self.elo_change)

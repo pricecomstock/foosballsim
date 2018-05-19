@@ -1,19 +1,18 @@
 import requests
-
 import os
 slack_webhook_url = os.environ.get('SLACK_WEBHOOK_URL', None)
 # This just the URL for an incoming webhook set up on slack.
-from config.secrets import slack_webhook_url
+# from config.secrets import slack_webhook_url
 
 def eternal_season_slack_game_notifier(game):
     # accepts a game and sends it to slack
     payload = game.slack_report()
-    # requests.post(slack_webhook_url, json=payload)
+    requests.post(slack_webhook_url, json=payload)
 
 def eternal_season_slack_league_notifier(league):
     # accepts a game and sends it to slack
     payload = league.slack_report()
-    # requests.post(slack_webhook_url, json=payload)
+    requests.post(slack_webhook_url, json=payload)
 
 # An array of dictionaries.
 #   function: a function that the game object should be passed to. It should notify or send something.

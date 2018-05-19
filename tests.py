@@ -294,14 +294,14 @@ class TestJSONExport(unittest.TestCase):
             self.assertAlmostEqual(test_elo, known_elo)
     
 class TestSlackOutput(unittest.TestCase):
-    # These are commented out to prevent spam
-    # def test_slack_webhook(self):
-    #     test_league = get_test_league()
-    #     eternal_season_slack_game_notifier(test_league.games[0])
+    #These are commented out to prevent spam
+    def test_slack_webhook(self):
+        test_league = get_test_league()
+        eternal_season_slack_game_notifier(test_league.games[0])
     
-    # def test_league_report(self):
-    #     test_league = get_test_league()
-    #     eternal_season_slack_league_notifier(test_league)
+    def test_league_report(self):
+        test_league = get_test_league()
+        eternal_season_slack_league_notifier(test_league)
     pass
 
 if __name__ == '__main__':

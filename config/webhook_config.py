@@ -1,4 +1,8 @@
 import requests
+
+import os
+slack_webhook_url = os.environ.get('SLACK_WEBHOOK_URL', None)
+# This just the URL for an incoming webhook set up on slack.
 from config.secrets import slack_webhook_url
 
 def eternal_season_slack_game_notifier(game):

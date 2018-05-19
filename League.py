@@ -81,9 +81,6 @@ class League:
             return None
 
         game = self.play_generated_game(player_a_index, player_b_index)
-
-        if not self.static_league:
-            self.games.append(game)
         
         return game
 

@@ -6,7 +6,9 @@ from datetime import datetime, date, timedelta
 
 class Game:
     
-    def __init__(self, player_a, player_b, score_a, score_b, overtime, first_game=False, date=date.today()):
+    def __init__(self, player_a, player_b, score_a, score_b, overtime, first_game=False, date=date.today(), game_number = None):
+        self.game_number = game_number
+
         self.overtime = overtime
         self.score_a = score_a
         self.score_b = score_b
@@ -37,13 +39,13 @@ class Game:
             self.king_change = False
 
     @classmethod
-    def generate_random_from_players(cls, player_a, player_b):
+    def generate_random_from_players(cls, player_a, player_b, game_number=None):
         score_a, score_b, overtime = cls.generate_scores(player_a, player_b)
-        return cls(player_a, player_b, score_a, score_b, overtime)
+        return cls(player_a, player_b, score_a, score_b, overtime, game_number=game_number)
     
     @classmethod
-    def create_from_scores(cls, player_a, player_b, score_a, score_b, overtime=False, first_game=False, date=date.today()):
-        return cls(player_a, player_b, score_a, score_b, overtime, first_game, date)
+    def create_from_scores(cls, player_a, player_b, score_a, score_b, overtime=False, first_game=False, date=date.today(), game_number=None):
+        return cls(player_a, player_b, score_a, score_b, overtime, first_game, date, game_number=game_number)
     
     @staticmethod
     def generate_scores(player_a, player_b):
@@ -80,7 +82,7 @@ class Game:
         king_string = ' to become king' if self.king_change else ''
         overtime_string = ' in sudden death' if self.overtime else ''
         
-        return "*{}* defeats *{}* {}-{}{}{}!".format(winner.name, loser.name, str(score_winner), str(score_loser), overtime_string, king_string)
+        return "GAME #{}: *{}* defeats *{}* {}-{}{}{}!".format(str(self.game_number), winner.name, loser.name, str(score_winner), str(score_loser), overtime_string, king_string)
     
     def to_json(self, verbose_players=False):
         winner, loser, score_winner, score_loser = self.get_winner_loser()

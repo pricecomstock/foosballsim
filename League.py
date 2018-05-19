@@ -44,7 +44,7 @@ class League:
         player_a = self.players[player_a_index]
         player_b = self.players[player_b_index]
         
-        game = Game.generate_random_from_players(player_a, player_b)
+        game = Game.generate_random_from_players(player_a, player_b, game_number=len(self.games) + 1)
         
         if not self.static_league:
             self.games.append(game)
@@ -106,7 +106,7 @@ class League:
                 first_game = True
             else:
                 first_game = False
-            game = Game.create_from_scores(player_a, player_b, player_a_score_tuple[1], player_b_score_tuple[1], date=date, first_game=first_game)
+            game = Game.create_from_scores(player_a, player_b, player_a_score_tuple[1], player_b_score_tuple[1], date=date, first_game=first_game, game_number=len(self.games) + 1)
             self.games.append(game)
             return game
     

@@ -13,9 +13,9 @@ league_notifiers = {}
 
 for league_name in DEFAULT_LEAGUE_INPUT_FILES:
     try:
-        with open(DEFAULT_LEAGUE_INPUT_FILES[league_name]) as original_results:
+        with open(DEFAULT_LEAGUE_INPUT_FILES[league_name]['input_file']) as original_results:
             # { league_name: LeagueObject }
-            leagues.setdefault(league_name, League.from_results_csv(original_results))
+            leagues.setdefault(league_name, League.from_results_csv(original_results, static_league=DEFAULT_LEAGUE_INPUT_FILES[league_name]['static']))
     except IOError:
         pass
 
@@ -28,6 +28,7 @@ for notifier in NOTIFIERS:
 # This would be a little more elegant with a database at this point but MVP!!!
 def save_league(league_name):
     leagues[league_name].export_to_csv(elos=False, file_name='results/' + league_name + ".csv")
+    # pass
 
 class LeagueListHandler(tornado.web.RequestHandler):
     def set_default_headers(self):

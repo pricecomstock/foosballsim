@@ -202,7 +202,7 @@ class TestLeagueGames(unittest.TestCase):
 
     def test_generated_games(self):
         test_league = get_test_league()
-        
+
         game = test_league.play_generated_game(0,1)
         self.assertIsNotNone(game.score_a)
         self.assertIsNotNone(game.score_b)

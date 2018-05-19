@@ -75,7 +75,7 @@ class PlayRoundRobinHandler(tornado.web.RequestHandler):
         if league_name in leagues:
             round_robin_games = leagues[league_name].play_round_robin()
 
-            if league_name in leagues: # is there a notifier on this league?
+            if league_name in league_notifiers: # is there a notifier on this league?
                 for game_notifier, league_notifier in league_notifiers[league_name]:
                     for game in round_robin_games:
                         game_notifier(game)
@@ -88,12 +88,47 @@ class PlayRoundRobinHandler(tornado.web.RequestHandler):
         else:
             self.write({'success': False, 'error': 'league not found'})
 
+class SlackGameRequestHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'GET')
+
+    def post(self):
+        data = self.get_body_argument("text", default=None, strip=True)
+        
+        if data is not None and len(data.split()) == 2:
+            player_a, player_b = data.split()
+        else:
+            self.write({'response_type': 'ephemeral', 'text': 'you fucked this up somehow'})
+            return
+        
+        league_name = 'the-eternal-season'
+
+        if league_name in leagues:
+            game = leagues[league_name].play_generated_game_by_player_names(player_a, player_b)
+
+            if game is not None:
+                if not leagues[league_name].static_league:
+                    save_league(league_name)
+
+                slack_report = game.slack_report()
+                slack_report['response_type'] = 'in_channel'
+                
+                self.write(slack_report)
+            
+            else:
+                self.write({'response_type': 'ephemeral', 'text': 'those are not real players'})
+        else:
+            self.write({'response_type': 'ephemeral', 'text': 'league not found'})
+
 def make_app():
     return tornado.web.Application([
         (r"/api/listleagues", LeagueListHandler),
         (r"/api/elos/(.*)", EloHandler),
         (r"/api/gamehistory/(.*)", FullGameHistoryHandler),
         (r"/api/roundrobin/(.*)", PlayRoundRobinHandler),
+        (r"/api/slackgamerequest", SlackGameRequestHandler),
         (r'/(.*)', tornado.web.StaticFileHandler, {'path': 'static/', "default_filename": "index.html"}),
     ])
 

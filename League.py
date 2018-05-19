@@ -65,10 +65,27 @@ class League:
 
         for player_a_index, player_b_index in indices_to_play:
             game = self.play_generated_game(player_a_index, player_b_index)
+            round_robin_games.append(game)
             if not self.static_league:
-                round_robin_games.append(game)
+                self.games.append(game)
         
         return round_robin_games
+    
+    def play_generated_game_by_player_names(self, player_a, player_b):
+        lowercase_players = [player.name.lower() for player in self.players]
+
+        try:
+            player_a_index = lowercase_players.index(player_a.lower())
+            player_b_index = lowercase_players.index(player_b.lower())
+        except ValueError:
+            return None
+
+        game = self.play_generated_game(player_a_index, player_b_index)
+
+        if not self.static_league:
+            self.games.append(game)
+        
+        return game
 
     def stat_report(self):
         report = ''

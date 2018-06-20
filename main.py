@@ -96,6 +96,11 @@ class SlackGameRequestHandler(tornado.web.RequestHandler):
 
     def post(self):
         data = self.get_body_argument("text", default=None, strip=True)
+        league_name = 'the-eternal-season'
+
+        if data.lower() in ['table', 'stats']:
+            self.write(leagues[league_name].slack_report())
+            return
         
         if data is not None and len(data.split()) == 2:
             player_a, player_b = data.split()
@@ -103,7 +108,6 @@ class SlackGameRequestHandler(tornado.web.RequestHandler):
             self.write({'response_type': 'ephemeral', 'text': 'you fucked this up somehow'})
             return
         
-        league_name = 'the-eternal-season'
 
         if league_name in leagues:
             game = leagues[league_name].play_generated_game_by_player_names(player_a, player_b)

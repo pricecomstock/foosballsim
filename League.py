@@ -83,9 +83,14 @@ class League:
         return game
 
     def stat_report(self):
+        def elo_sort_function(player):
+            return player.elo
+
+        elo_sorted_players = sorted(self.players, key=elo_sort_function, reverse=True)
+
         report = ''
-        report += self.players[0].str_header() + '\n'
-        report += '\n'.join([str(player) for player in self.players])
+        report += Player.str_header() + '\n'
+        report += '\n'.join([str(player) for player in elo_sorted_players])
         return report
 
     # This will take a "score marquee array" and transform it to (player_id, score) pairs in a dict with metadata

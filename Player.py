@@ -110,7 +110,8 @@ class Player:
         elif not won:
             self.king = False
     
-    def str_header(self):
+    @staticmethod
+    def str_header():
         return ''.join([
             'PLAYER'.ljust(8) + '|',
             'W'.rjust(5),

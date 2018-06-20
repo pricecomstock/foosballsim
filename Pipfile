@@ -15,4 +15,4 @@ python_version = "3.6"
 
 [scripts]
 foos = "python main.py"
-
+tests = "python tests.py"

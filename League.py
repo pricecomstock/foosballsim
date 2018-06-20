@@ -66,8 +66,6 @@ class League:
         for player_a_index, player_b_index in indices_to_play:
             game = self.play_generated_game(player_a_index, player_b_index)
             round_robin_games.append(game)
-            if not self.static_league:
-                self.games.append(game)
         
         return round_robin_games
     
